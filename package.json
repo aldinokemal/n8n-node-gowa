@@ -1,0 +1,56 @@
+{
+  "name": "n8n-nodes-gowa",
+  "version": "0.1.0",
+  "description": "n8n community node for Go WhatsApp Web MultiDevice API",
+  "keywords": [
+    "n8n-community-node-package",
+    "whatsapp",
+    "gowa",
+    "go-whatsapp-web-multidevice"
+  ],
+  "license": "MIT",
+  "homepage": "https://github.com/aldinokemal/go-whatsapp-web-multidevice",
+  "author": {
+    "name": "GOWA Community",
+    "email": "dev@gowa.dev"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/hydrogendioxide/n8n-node-gowa.git"
+  },
+  "engines": {
+    "node": ">=22.15"
+  },
+  "main": "index.js",
+  "scripts": {
+    "build": "npx rimraf dist && tsc && gulp build:icons",
+    "dev": "tsc --watch",
+    "format": "prettier nodes credentials --write",
+    "lint": "eslint nodes credentials package.json",
+    "lintfix": "eslint nodes credentials package.json --fix",
+    "prepublishOnly": "npm run build && npm run lint -c .eslintrc.prepublish.js nodes credentials package.json"
+  },
+  "files": [
+    "dist"
+  ],
+  "n8n": {
+    "n8nNodesApiVersion": 1,
+    "credentials": [
+      "dist/credentials/GOWAApi.credentials.js"
+    ],
+    "nodes": [
+      "dist/nodes/GOWA/Gowa.node.js"
+    ]
+  },
+  "devDependencies": {
+    "@typescript-eslint/parser": "~8.32.0",
+    "eslint": "^8.57.0",
+    "eslint-plugin-n8n-nodes-base": "^1.16.3",
+    "gulp": "^5.0.0",
+    "prettier": "^3.5.3",
+    "typescript": "^5.8.2"
+  },
+  "peerDependencies": {
+    "n8n-workflow": "*"
+  }
+}
