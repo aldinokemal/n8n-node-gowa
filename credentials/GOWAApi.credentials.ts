@@ -8,7 +8,7 @@ import {
 export class GOWAApi implements ICredentialType {
 	name = 'goWhatsappApi';
 	displayName = 'GOWA API';
-	documentationUrl = 'https://github.com/aldinokemal/go-whatsapp-web-multidevicei';
+	documentationUrl = 'https://github.com/aldinokemal/go-whatsapp-web-multidevice';
 	properties: INodeProperties[] = [
 		{
 			displayName: 'Host URL',
@@ -37,7 +37,7 @@ export class GOWAApi implements ICredentialType {
 		type: 'generic',
 		properties: {
 			headers: {
-				Authorization: '={{"Basic " + $base64($credentials.username + ":" + $credentials.password)}}',
+				Authorization: '={{"Basic "+($credentials.username + ":" + $credentials.password).base64Encode()}}',
 			},
 		},
 	};
@@ -45,7 +45,7 @@ export class GOWAApi implements ICredentialType {
 	test: ICredentialTestRequest = {
 		request: {
 			baseURL: '={{$credentials?.hostUrl}}',
-			url: '/api/v1/auth/login',
+			url: '/',
 		},
 	};
 }
