@@ -9,14 +9,14 @@
     "go-whatsapp-web-multidevice"
   ],
   "license": "MIT",
-  "homepage": "https://github.com/aldinokemal/go-whatsapp-web-multidevice",
+  "homepage": "https://github.com/aldinokemal/n8n-node-gowa",
   "author": {
     "name": "GOWA Community",
     "email": "dev@gowa.dev"
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/hydrogendioxide/n8n-node-gowa.git"
+    "url": "https://github.com/aldinokemal/n8n-node-gowa"
   },
   "engines": {
     "node": ">=22.15"
