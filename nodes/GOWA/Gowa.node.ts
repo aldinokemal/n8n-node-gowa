@@ -15,12 +15,12 @@ import { executeUserOperation, userOperations, userProperties } from './user.ope
 
 export class Gowa implements INodeType {
 	description: INodeTypeDescription = {
-		displayName: 'GOWA',
 		name: 'gowa',
-		icon: 'file:gowa.svg',
+		displayName: 'GOWA',
+		icon: 'file:gowa-icon.svg',
 		group: ['messaging'],
 		version: 1,
-		subtitle: '={{$parameter["operation"] + ": " + $parameter["resource"]}}',
+		subtitle: '={{$parameter["resource"] + ": " + $parameter["operation"]}}',
 		description: 'Interact with Go WhatsApp Web MultiDevice API',
 		defaults: {
 			name: 'GOWA',
@@ -53,6 +53,11 @@ export class Gowa implements INodeType {
 						description: 'App connection and device management',
 					},
 					{
+						name: 'Chatting',
+						value: 'send',
+						description: 'Send messages and media',
+					},
+					{
 						name: 'Group',
 						value: 'group',
 						description: 'Group management operations',
@@ -61,11 +66,6 @@ export class Gowa implements INodeType {
 						name: 'Message',
 						value: 'message',
 						description: 'Message management operations',
-					},
-					{
-						name: 'Send',
-						value: 'send',
-						description: 'Send messages and media',
 					},
 					{
 						name: 'User',
