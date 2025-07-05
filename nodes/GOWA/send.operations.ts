@@ -19,6 +19,12 @@ export const sendOperations: INodeProperties[] = [
 		},
 		options: [
 			{
+				name: 'Send Audio',
+				value: 'sendAudio',
+				description: 'Send an audio file',
+				action: 'Send an audio file',
+			},
+			{
 				name: 'Send Contact',
 				value: 'sendContact',
 				description: 'Send a contact',
@@ -68,7 +74,7 @@ export const sendProperties: INodeProperties[] = [
 		displayOptions: {
 			show: {
 				resource: ['send'],
-				operation: ['sendText', 'sendImage', 'sendContact', 'sendLink', 'sendLocation'],
+				operation: ['sendText', 'sendImage', 'sendContact', 'sendLink', 'sendLocation', 'sendAudio'],
 			},
 		},
 		default: '',
@@ -185,7 +191,63 @@ export const sendProperties: INodeProperties[] = [
 		placeholder: 'https://example.com/image.jpg',
 		description: 'URL of the image to send',
 	},
-
+	{
+		displayName: 'Audio Source',
+		name: 'audioSource',
+		type: 'options',
+		required: true,
+		displayOptions: {
+			show: {
+				resource: ['send'],
+				operation: ['sendAudio'],
+			},
+		},
+		options: [
+			{
+				name: 'File Upload',
+				value: 'file',
+				description: 'Upload audio file from binary data',
+			},
+			{
+				name: 'Audio URL',
+				value: 'url',
+				description: 'Send audio from URL',
+			},
+		],
+		default: 'url',
+		description: 'Choose whether to upload a file or use an audio URL',
+	},
+	{
+		displayName: 'Audio File Property',
+		name: 'audioFile',
+		type: 'string',
+		required: true,
+		displayOptions: {
+			show: {
+				resource: ['send'],
+				operation: ['sendAudio'],
+				audioSource: ['file'],
+			},
+		},
+		default: 'data',
+		description: 'Name of the binary property containing the audio file',
+	},
+	{
+		displayName: 'Audio URL',
+		name: 'audioUrl',
+		type: 'string',
+		required: true,
+		displayOptions: {
+			show: {
+				resource: ['send'],
+				operation: ['sendAudio'],
+				audioSource: ['url'],
+			},
+		},
+		default: '',
+		placeholder: 'https://example.com/audio.mp3',
+		description: 'URL of the audio to send',
+	},
 	{
 		displayName: 'Caption',
 		name: 'caption',
@@ -257,7 +319,6 @@ export const sendProperties: INodeProperties[] = [
 		placeholder: '110.370529',
 		description: 'Longitude coordinate',
 	},
-
 	{
 		displayName: 'Reply to Message ID',
 		name: 'replyMessageId',
@@ -265,7 +326,7 @@ export const sendProperties: INodeProperties[] = [
 		displayOptions: {
 			show: {
 				resource: ['send'],
-				operation: ['sendText', 'sendImage', 'sendContact', 'sendLink', 'sendLocation'],
+				operation: ['sendText', 'sendImage', 'sendContact', 'sendLink', 'sendLocation', 'sendAudio'],
 			},
 		},
 		default: '',
@@ -471,7 +532,18 @@ export const executeSendOperation: OperationExecutor = async function (
 			requestOptions.body.longitude = longitude;
 			break;
 
+		case 'sendAudio':
+			const audioSource = this.getNodeParameter('audioSource', itemIndex) as string;
 
+			if (audioSource === 'file') {
+				return await handleFileUpload.call(this, '/send/audio', 'audioFile', 'audio', itemIndex);
+			} else {
+				// Handle audio URL
+				const audioUrl = this.getNodeParameter('audioUrl', itemIndex) as string;
+				requestOptions.url = `${baseUrl.replace(/\/$/, '')}/send/audio`;
+				requestOptions.body.audio_url = audioUrl;
+			}
+			break;
 
 		default:
 			throw new NodeOperationError(this.getNode(), `Unknown send operation: ${operation}`);

@@ -1,6 +1,6 @@
 {
   "name": "@aldinokemal2104/n8n-nodes-gowa",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "n8n community node for Go WhatsApp Web MultiDevice API",
   "keywords": [
     "n8n-community-node-package",
