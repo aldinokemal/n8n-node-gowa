@@ -49,6 +49,12 @@ export const sendOperations: INodeProperties[] = [
 				action: 'Send a location',
 			},
 			{
+				name: 'Send Chat Presence',
+				value: 'sendChatPresence',
+				description: 'Send typing indicator to start or stop showing that you are composing a message',
+				action: 'Send chat presence (typing indicator)',
+			},
+			{
 				name: 'Send Presence',
 				value: 'sendPresence',
 				description: 'Send presence status',
@@ -74,7 +80,7 @@ export const sendProperties: INodeProperties[] = [
 		displayOptions: {
 			show: {
 				resource: ['send'],
-				operation: ['sendText', 'sendImage', 'sendContact', 'sendLink', 'sendLocation', 'sendAudio'],
+				operation: ['sendText', 'sendImage', 'sendContact', 'sendLink', 'sendLocation', 'sendAudio', 'sendChatPresence'],
 			},
 		},
 		default: '',
@@ -133,6 +139,32 @@ export const sendProperties: INodeProperties[] = [
 		],
 		default: 'available',
 		description: 'Presence status to send',
+	},
+	{
+		displayName: 'Chat Presence Action',
+		name: 'chatPresenceAction',
+		type: 'options',
+		required: true,
+		displayOptions: {
+			show: {
+				resource: ['send'],
+				operation: ['sendChatPresence'],
+			},
+		},
+		options: [
+			{
+				name: 'Start Typing',
+				value: 'start',
+				description: 'Start showing typing indicator',
+			},
+			{
+				name: 'Stop Typing',
+				value: 'stop',
+				description: 'Stop showing typing indicator',
+			},
+		],
+		default: 'start',
+		description: 'Action to perform - "start" to begin typing indicator, "stop" to end typing indicator',
 	},
 	{
 		displayName: 'Image Source',
@@ -451,10 +483,12 @@ export const executeSendOperation: OperationExecutor = async function (
 		const phoneNumber = this.getNodeParameter('phoneNumber', itemIndex) as string;
 		requestOptions.body.phone = phoneNumber;
 
-		// Add common optional parameters for operations that support them
-		const replyMessageId = this.getNodeParameter('replyMessageId', itemIndex, '') as string;
-		if (replyMessageId) {
-			requestOptions.body.reply_message_id = replyMessageId;
+		// Add common optional parameters for operations that support them (not for sendChatPresence)
+		if (operation !== 'sendChatPresence') {
+			const replyMessageId = this.getNodeParameter('replyMessageId', itemIndex, '') as string;
+			if (replyMessageId) {
+				requestOptions.body.reply_message_id = replyMessageId;
+			}
 		}
 	}
 
@@ -479,6 +513,12 @@ export const executeSendOperation: OperationExecutor = async function (
 			if (linkCaption) {
 				requestOptions.body.caption = linkCaption;
 			}
+			break;
+
+		case 'sendChatPresence':
+			const chatPresenceAction = this.getNodeParameter('chatPresenceAction', itemIndex) as string;
+			requestOptions.url = `${baseUrl.replace(/\/$/, '')}/send/chat-presence`;
+			requestOptions.body.action = chatPresenceAction;
 			break;
 
 		case 'sendPresence':
