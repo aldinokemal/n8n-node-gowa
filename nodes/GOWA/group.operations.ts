@@ -93,13 +93,11 @@ export const groupOperations: INodeProperties[] = [
 			{
 				name: 'Set Group Name',
 				value: 'setGroupName',
-				description: 'Set group name',
 				action: 'Set group name',
 			},
 			{
 				name: 'Set Group Photo',
 				value: 'setGroupPhoto',
-				description: 'Set group photo',
 				action: 'Set group photo',
 			},
 			{

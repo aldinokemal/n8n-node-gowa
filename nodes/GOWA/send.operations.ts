@@ -25,6 +25,12 @@ export const sendOperations: INodeProperties[] = [
 				action: 'Send an audio file',
 			},
 			{
+				name: 'Send Chat Presence',
+				value: 'sendChatPresence',
+				description: 'Send typing indicator to start or stop showing that you are composing a message',
+				action: 'Send chat presence typing indicator',
+			},
+			{
 				name: 'Send Contact',
 				value: 'sendContact',
 				description: 'Send a contact',
@@ -47,12 +53,6 @@ export const sendOperations: INodeProperties[] = [
 				value: 'sendLocation',
 				description: 'Send a location',
 				action: 'Send a location',
-			},
-			{
-				name: 'Send Chat Presence',
-				value: 'sendChatPresence',
-				description: 'Send typing indicator to start or stop showing that you are composing a message',
-				action: 'Send chat presence (typing indicator)',
 			},
 			{
 				name: 'Send Presence',
@@ -164,7 +164,6 @@ export const sendProperties: INodeProperties[] = [
 			},
 		],
 		default: 'start',
-		description: 'Action to perform - "start" to begin typing indicator, "stop" to end typing indicator',
 	},
 	{
 		displayName: 'Image Source',
