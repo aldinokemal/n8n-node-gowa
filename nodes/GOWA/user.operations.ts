@@ -31,6 +31,12 @@ export const userOperations: INodeProperties[] = [
 				action: 'Get user avatar',
 			},
 			{
+				name: 'Get Business Profile',
+				value: 'getBusinessProfile',
+				description: 'Get business profile information',
+				action: 'Get business profile information',
+			},
+			{
 				name: 'Get Privacy Settings',
 				value: 'getPrivacySettings',
 				action: 'Get privacy settings',
@@ -60,7 +66,7 @@ export const userProperties: INodeProperties[] = [
 		displayOptions: {
 			show: {
 				resource: ['user'],
-				operation: ['getUserInfo', 'getAvatar', 'checkContact'],
+				operation: ['getUserInfo', 'getAvatar', 'checkContact', 'getBusinessProfile'],
 			},
 		},
 		default: '',
@@ -138,6 +144,12 @@ export const executeUserOperation: OperationExecutor = async function (
 			const checkPhone = this.getNodeParameter('userPhone', itemIndex) as string;
 			requestOptions.url = `${baseUrl.replace(/\/$/, '')}/user/check`;
 			requestOptions.qs.phone = checkPhone;
+			break;
+
+		case 'getBusinessProfile':
+			const businessPhone = this.getNodeParameter('userPhone', itemIndex) as string;
+			requestOptions.url = `${baseUrl.replace(/\/$/, '')}/user/business-profile`;
+			requestOptions.qs.phone = businessPhone;
 			break;
 
 		default:

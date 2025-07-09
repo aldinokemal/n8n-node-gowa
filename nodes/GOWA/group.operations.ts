@@ -96,11 +96,6 @@ export const groupOperations: INodeProperties[] = [
 				action: 'Set group name',
 			},
 			{
-				name: 'Set Group Photo',
-				value: 'setGroupPhoto',
-				action: 'Set group photo',
-			},
-			{
 				name: 'Set Group Topic',
 				value: 'setGroupTopic',
 				description: 'Set or remove group topic/description',
@@ -148,7 +143,7 @@ export const groupProperties: INodeProperties[] = [
 		displayOptions: {
 			show: {
 				resource: ['group'],
-				operation: ['addParticipant', 'removeParticipant', 'promoteParticipant', 'demoteParticipant', 'leaveGroup', 'getParticipantRequests', 'approveParticipantRequest', 'rejectParticipantRequest', 'setGroupPhoto', 'setGroupName', 'setGroupLocked', 'setGroupAnnounce', 'setGroupTopic'],
+				operation: ['addParticipant', 'removeParticipant', 'promoteParticipant', 'demoteParticipant', 'leaveGroup', 'getParticipantRequests', 'approveParticipantRequest', 'rejectParticipantRequest', 'setGroupName', 'setGroupLocked', 'setGroupAnnounce', 'setGroupTopic'],
 			},
 		},
 		default: '',
@@ -198,47 +193,7 @@ export const groupProperties: INodeProperties[] = [
 		placeholder: 'https://chat.whatsapp.com/whatsappKeyJoinGroup',
 		description: 'WhatsApp group invite link',
 	},
-	{
-		displayName: 'Photo Source',
-		name: 'photoSource',
-		type: 'options',
-		required: true,
-		displayOptions: {
-			show: {
-				resource: ['group'],
-				operation: ['setGroupPhoto'],
-			},
-		},
-		options: [
-			{
-				name: 'File Upload',
-				value: 'file',
-				description: 'Upload photo file from binary data',
-			},
-			{
-				name: 'Remove Photo',
-				value: 'remove',
-				description: 'Remove group photo',
-			},
-		],
-		default: 'file',
-		description: 'Choose whether to upload a file or remove the photo',
-	},
-	{
-		displayName: 'Photo File Property',
-		name: 'photoFile',
-		type: 'string',
-		required: true,
-		displayOptions: {
-			show: {
-				resource: ['group'],
-				operation: ['setGroupPhoto'],
-				photoSource: ['file'],
-			},
-		},
-		default: 'data',
-		description: 'Name of the binary property containing the photo file',
-	},
+
 	{
 		displayName: 'Locked',
 		name: 'locked',
@@ -282,53 +237,7 @@ export const groupProperties: INodeProperties[] = [
 	},
 ];
 
-async function handleGroupPhotoUpload(this: IExecuteFunctions, itemIndex: number): Promise<any> {
-	const groupId = this.getNodeParameter('groupId', itemIndex) as string;
-	const photoSource = this.getNodeParameter('photoSource', itemIndex) as string;
 
-	// Get credentials to retrieve base URL
-	const credentials = await this.getCredentials('goWhatsappApi');
-	const baseUrl = credentials.hostUrl as string || 'http://localhost:3000';
-	const fullUrl = `${baseUrl.replace(/\/$/, '')}/group/photo`;
-
-	if (photoSource === 'remove') {
-		// Remove photo by sending only group_id
-		const formData = {
-			group_id: groupId,
-		};
-
-		const response = await this.helpers.requestWithAuthentication.call(this, 'goWhatsappApi', {
-			method: 'POST' as IHttpRequestMethods,
-			url: fullUrl,
-			formData,
-			json: true,
-		});
-		return response;
-	} else {
-		// Upload photo
-		const binaryPropertyName = this.getNodeParameter('photoFile', itemIndex) as string;
-		const binaryData = this.helpers.assertBinaryData(itemIndex, binaryPropertyName);
-
-		const formData = {
-			group_id: groupId,
-			photo: {
-				value: binaryData.data,
-				options: {
-					filename: binaryData.fileName || 'photo',
-					contentType: binaryData.mimeType,
-				},
-			},
-		};
-
-		const response = await this.helpers.requestWithAuthentication.call(this, 'goWhatsappApi', {
-			method: 'POST' as IHttpRequestMethods,
-			url: fullUrl,
-			formData,
-			json: true,
-		});
-		return response;
-	}
-}
 
 export const executeGroupOperation: OperationExecutor = async function (
 	this: IExecuteFunctions,
@@ -423,8 +332,7 @@ export const executeGroupOperation: OperationExecutor = async function (
 			requestOptions.body.participants = rejectParticipants.split(',').map(p => p.trim());
 			break;
 
-		case 'setGroupPhoto':
-			return await handleGroupPhotoUpload.call(this, itemIndex);
+
 
 		case 'setGroupName':
 			const nameGroupId = this.getNodeParameter('groupId', itemIndex) as string;

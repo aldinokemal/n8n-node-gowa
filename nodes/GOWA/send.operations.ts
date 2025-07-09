@@ -55,6 +55,12 @@ export const sendOperations: INodeProperties[] = [
 				action: 'Send a location',
 			},
 			{
+				name: 'Send Poll',
+				value: 'sendPoll',
+				description: 'Send a poll with multiple options',
+				action: 'Send a poll',
+			},
+			{
 				name: 'Send Presence',
 				value: 'sendPresence',
 				description: 'Send presence status',
@@ -80,7 +86,7 @@ export const sendProperties: INodeProperties[] = [
 		displayOptions: {
 			show: {
 				resource: ['send'],
-				operation: ['sendText', 'sendImage', 'sendContact', 'sendLink', 'sendLocation', 'sendAudio', 'sendChatPresence'],
+				operation: ['sendText', 'sendImage', 'sendContact', 'sendLink', 'sendLocation', 'sendAudio', 'sendChatPresence', 'sendPoll'],
 			},
 		},
 		default: '',
@@ -401,6 +407,49 @@ export const sendProperties: INodeProperties[] = [
 		default: false,
 		description: 'Whether to compress the media',
 	},
+	{
+		displayName: 'Question',
+		name: 'question',
+		type: 'string',
+		required: true,
+		displayOptions: {
+			show: {
+				resource: ['send'],
+				operation: ['sendPoll'],
+			},
+		},
+		default: '',
+		description: 'The question for the poll',
+	},
+	{
+		displayName: 'Options',
+		name: 'options',
+		type: 'string',
+		required: true,
+		displayOptions: {
+			show: {
+				resource: ['send'],
+				operation: ['sendPoll'],
+			},
+		},
+		default: '',
+		placeholder: 'Option 1,Option 2,Option 3',
+		description: 'Comma-separated list of poll options',
+	},
+	{
+		displayName: 'Max Answers',
+		name: 'maxAnswer',
+		type: 'number',
+		required: true,
+		displayOptions: {
+			show: {
+				resource: ['send'],
+				operation: ['sendPoll'],
+			},
+		},
+		default: 1,
+		description: 'The maximum number of answers allowed for the poll',
+	},
 ];
 
 async function handleFileUpload(this: IExecuteFunctions, endpoint: string, fileParam: string, apiFieldName: string, itemIndex: number): Promise<any> {
@@ -582,6 +631,16 @@ export const executeSendOperation: OperationExecutor = async function (
 				requestOptions.url = `${baseUrl.replace(/\/$/, '')}/send/audio`;
 				requestOptions.body.audio_url = audioUrl;
 			}
+			break;
+
+		case 'sendPoll':
+			const question = this.getNodeParameter('question', itemIndex) as string;
+			const options = this.getNodeParameter('options', itemIndex) as unknown as string;
+			const maxAnswer = this.getNodeParameter('maxAnswer', itemIndex) as number;
+			requestOptions.url = `${baseUrl.replace(/\/$/, '')}/send/poll`;
+			requestOptions.body.question = question;
+			requestOptions.body.options = options.split(',').map((option: string) => option.trim());
+			requestOptions.body.max_answer = maxAnswer;
 			break;
 
 		default:
