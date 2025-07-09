@@ -41,8 +41,6 @@ This node supports the following operations:
 * **Send Text** - Send text messages
 * **Send Image** - Send images with optional caption
 * **Send Audio** - Send audio files
-* **Send File** - Send files/documents
-* **Send Video** - Send videos with optional caption
 * **Send Contact** - Send contact information
 * **Send Location** - Send location coordinates
 * **Send Poll** - Send polls with multiple options
