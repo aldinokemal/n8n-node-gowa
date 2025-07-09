@@ -31,8 +31,6 @@ This node supports the following operations:
 
 ### App Management
 
-* **Login** - Login to WhatsApp Web
-* **Logout** - Logout from WhatsApp Web
 * **Get Device Info** - Get device information
 * **Reconnect** - Reconnect to WhatsApp Web
 
@@ -54,7 +52,8 @@ This node supports the following operations:
 * **React to Message** - Add emoji reactions to messages
 * **Update Message** - Update message content
 * **Read Message** - Mark message as read
-* **Unread Message** - Mark message as unread
+* **Star Message** - Star a message
+* **Unstar Message** - Unstar a message
 
 ### Group Management
 
