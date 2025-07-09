@@ -15,6 +15,14 @@ GOWA provides a comprehensive WhatsApp Web API implementation written in Go, sup
 
 ## Installation
 
+### Option 1: Install from npm (Recommended)
+
+```bash
+npm install @aldinokemal2104/n8n-nodes-gowa
+```
+
+### Option 2: Manual Installation
+
 Follow the [installation guide](https://docs.n8n.io/integrations/community-nodes/installation/) in the n8n community nodes documentation.
 
 ## Operations
@@ -23,8 +31,6 @@ This node supports the following operations:
 
 ### App Management
 
-* **Login** - Login to WhatsApp Web
-* **Logout** - Logout from WhatsApp Web
 * **Get Device Info** - Get device information
 * **Reconnect** - Reconnect to WhatsApp Web
 
@@ -33,11 +39,11 @@ This node supports the following operations:
 * **Send Text** - Send text messages
 * **Send Image** - Send images with optional caption
 * **Send Audio** - Send audio files
-* **Send File** - Send files/documents
-* **Send Video** - Send videos with optional caption
 * **Send Contact** - Send contact information
 * **Send Location** - Send location coordinates
 * **Send Poll** - Send polls with multiple options
+* **Send Chat Presence** - Send typing indicator (start/stop)
+* **Send Presence** - Send presence status (available/unavailable)
 
 ### Message Management
 
@@ -46,7 +52,8 @@ This node supports the following operations:
 * **React to Message** - Add emoji reactions to messages
 * **Update Message** - Update message content
 * **Read Message** - Mark message as read
-* **Unread Message** - Mark message as unread
+* **Star Message** - Star a message
+* **Unstar Message** - Unstar a message
 
 ### Group Management
 
@@ -56,12 +63,21 @@ This node supports the following operations:
 * **Promote Participant** - Promote participants to admin
 * **Demote Participant** - Demote participants from admin
 * **Leave Group** - Leave a group
+* **Join Group With Link** - Join group using invite link
+* **Get Participant Requests** - Get list of participant requests to join group
+* **Approve Participant Request** - Approve participant request to join group
+* **Reject Participant Request** - Reject participant request to join group
+* **Set Group Name** - Set group name
+* **Set Group Topic** - Set or remove group topic/description
+* **Set Group Locked Status** - Lock/unlock group so only admins can modify group info
+* **Set Group Announce Mode** - Enable/disable announce mode so only admins can send messages
 
 ### User Operations
 
 * **Get User Info** - Get user profile information
 * **Get Avatar** - Get user avatar image
 * **Set Avatar** - Set user avatar image
+* **Get Business Profile** - Get business profile information
 * **Get Privacy Settings** - Get privacy settings
 * **Check Contact** - Check if contact is on WhatsApp
 
@@ -85,10 +101,25 @@ The credentials use HTTP Basic Authentication to connect to your GOWA API instan
 
 ### Example: Send Text Message
 
-1. Select **Send** as the resource
+1. Select **Chatting** as the resource
 2. Select **Send Text** as the operation
 3. Enter the phone number (with country code, without +)
 4. Enter your message text
+5. Execute the node
+
+### Example: Get Business Profile
+
+1. Select **User** as the resource
+2. Select **Get Business Profile** as the operation
+3. Enter the business phone number (with country code)
+4. Execute the node
+
+### Example: Send Chat Presence
+
+1. Select **Chatting** as the resource
+2. Select **Send Chat Presence** as the operation
+3. Enter the phone number
+4. Choose "Start Typing" or "Stop Typing" action
 5. Execute the node
 
 ## Resources
@@ -96,6 +127,7 @@ The credentials use HTTP Basic Authentication to connect to your GOWA API instan
 * [n8n community nodes documentation](https://docs.n8n.io/integrations/community-nodes/)
 * [GOWA GitHub Repository](https://github.com/aldinokemal/go-whatsapp-web-multidevice)
 * [GOWA API Documentation](https://github.com/aldinokemal/go-whatsapp-web-multidevice/blob/main/docs/openapi.yaml)
+* [npm package](https://www.npmjs.com/package/@aldinokemal2104/n8n-nodes-gowa)
 
 ## License
 
