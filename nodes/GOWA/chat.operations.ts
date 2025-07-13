@@ -31,12 +31,6 @@ export const chatOperations: INodeProperties[] = [
 				action: 'Get messages from a specific chat',
 			},
 			{
-				name: 'Label Chat',
-				value: 'labelChat',
-				description: 'Label or unlabel a chat',
-				action: 'Label or unlabel a chat',
-			},
-			{
 				name: 'Pin Chat',
 				value: 'pinChat',
 				description: 'Pin or unpin a chat',
@@ -114,7 +108,7 @@ export const chatProperties: INodeProperties[] = [
 		displayOptions: {
 			show: {
 				resource: ['chat'],
-				operation: ['getChatMessages', 'labelChat', 'pinChat'],
+				operation: ['getChatMessages', 'pinChat'],
 			},
 		},
 		default: '',
@@ -173,50 +167,6 @@ export const chatProperties: INodeProperties[] = [
 		description: 'Whether to filter messages by sender (true for you, false for others)',
 	},
 
-	// Properties for Label Chat
-	{
-		displayName: 'Label ID',
-		name: 'labelId',
-		type: 'string',
-		required: true,
-		displayOptions: {
-			show: {
-				resource: ['chat'],
-				operation: ['labelChat'],
-			},
-		},
-		default: '',
-		description: 'Unique identifier for the label',
-	},
-	{
-		displayName: 'Label Name',
-		name: 'labelName',
-		type: 'string',
-		required: true,
-		displayOptions: {
-			show: {
-				resource: ['chat'],
-				operation: ['labelChat'],
-			},
-		},
-		default: '',
-		description: 'Display name for the label',
-	},
-	{
-		displayName: 'Labeled',
-		name: 'labeled',
-		type: 'boolean',
-		required: true,
-		displayOptions: {
-			show: {
-				resource: ['chat'],
-				operation: ['labelChat'],
-			},
-		},
-		default: true,
-		description: 'Whether to apply (true) or remove (false) the label',
-	},
-
 	// Properties for Pin Chat
 	{
 		displayName: 'Pinned',
@@ -239,7 +189,7 @@ export const executeChatOperation: OperationExecutor = async function (
 	operation: string,
 	itemIndex: number,
 ): Promise<any> {
-	const credentials = await this.getCredentials('GOWAApi');
+	const credentials = await this.getCredentials('goWhatsappApi');
 	const baseUrl = credentials.hostUrl as string || 'http://localhost:3000';
 
 	const requestOptions: RequestOptions = {
@@ -272,16 +222,6 @@ export const executeChatOperation: OperationExecutor = async function (
 				search: this.getNodeParameter('search', itemIndex),
 			};
 			break;
-		case 'labelChat':
-			const chatJidForLabel = this.getNodeParameter('chatJid', itemIndex) as string;
-			requestOptions.method = 'POST';
-			requestOptions.url = `${baseUrl.replace(/\/$/, '')}/chat/${chatJidForLabel}/label`;
-			requestOptions.body = {
-				label_id: this.getNodeParameter('labelId', itemIndex),
-				label_name: this.getNodeParameter('labelName', itemIndex),
-				labeled: this.getNodeParameter('labeled', itemIndex),
-			};
-			break;
 		case 'pinChat':
 			const chatJidForPin = this.getNodeParameter('chatJid', itemIndex) as string;
 			requestOptions.method = 'POST';
@@ -294,5 +234,9 @@ export const executeChatOperation: OperationExecutor = async function (
 			throw new NodeOperationError(this.getNode(), `Unknown chat operation: ${operation}`);
 	}
 
-	return this.helpers.requestWithAuthentication.call(this, 'GOWAApi', requestOptions);
+	const response = await this.helpers.requestWithAuthentication.call(this, 'goWhatsappApi', {
+		...requestOptions,
+		json: true,
+	});
+	return response;
 };

@@ -59,11 +59,6 @@ export class Gowa implements INodeType {
 						description: 'Chat conversations and messaging',
 					},
 					{
-						name: 'Chatting',
-						value: 'send',
-						description: 'Send messages and media',
-					},
-					{
 						name: 'Group',
 						value: 'group',
 						description: 'Group management operations',
@@ -72,6 +67,11 @@ export class Gowa implements INodeType {
 						name: 'Message',
 						value: 'message',
 						description: 'Message management operations',
+					},
+					{
+						name: 'Send',
+						value: 'send',
+						description: 'Send messages and media',
 					},
 					{
 						name: 'User',

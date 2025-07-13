@@ -114,7 +114,7 @@ The credentials use HTTP Basic Authentication to connect to your GOWA API instan
 
 ### Example: Send Text Message
 
-1. Select **Chatting** as the resource
+1. Select **Send** as the resource
 2. Select **Send Text** as the operation
 3. Enter the phone number (with country code, without +)
 4. Enter your message text
@@ -129,7 +129,7 @@ The credentials use HTTP Basic Authentication to connect to your GOWA API instan
 
 ### Example: Send Chat Presence
 
-1. Select **Chatting** as the resource
+1. Select **Send** as the resource
 2. Select **Send Chat Presence** as the operation
 3. Enter the phone number
 4. Choose "Start Typing" or "Stop Typing" action
