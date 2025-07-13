@@ -12,6 +12,7 @@ import { executeSendOperation, sendOperations, sendProperties } from './send.ope
 import { executeMessageOperation, messageOperations, messageProperties } from './message.operations';
 import { executeGroupOperation, groupOperations, groupProperties } from './group.operations';
 import { executeUserOperation, userOperations, userProperties } from './user.operations';
+import { executeChatOperation, chatOperations, chatProperties } from './chat.operations';
 
 export class Gowa implements INodeType {
 	description: INodeTypeDescription = {
@@ -53,6 +54,11 @@ export class Gowa implements INodeType {
 						description: 'App connection and device management',
 					},
 					{
+						name: 'Chat',
+						value: 'chat',
+						description: 'Chat conversations and messaging',
+					},
+					{
 						name: 'Chatting',
 						value: 'send',
 						description: 'Send messages and media',
@@ -84,6 +90,8 @@ export class Gowa implements INodeType {
 			...groupProperties,
 			...userOperations,
 			...userProperties,
+			...chatOperations,
+			...chatProperties,
 		],
 	};
 
@@ -108,6 +116,8 @@ export class Gowa implements INodeType {
 					responseData = await executeGroupOperation.call(this, operation, i);
 				} else if (resource === 'user') {
 					responseData = await executeUserOperation.call(this, operation, i);
+				} else if (resource === 'chat') {
+					responseData = await executeChatOperation.call(this, operation, i);
 				} else {
 					throw new NodeOperationError(this.getNode(), `Unknown resource: ${resource}`);
 				}

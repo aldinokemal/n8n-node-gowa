@@ -25,61 +25,74 @@ npm install @aldinokemal2104/n8n-nodes-gowa
 
 Follow the [installation guide](https://docs.n8n.io/integrations/community-nodes/installation/) in the n8n community nodes documentation.
 
+- Open Settings > Community Nodes > Install
+- Enter `@aldinokemal2104/n8n-nodes-gowa`
+- Click Install
+
 ## Operations
 
 This node supports the following operations:
 
 ### App Management
 
-* **Get Device Info** - Get device information
-* **Reconnect** - Reconnect to WhatsApp Web
+- **Get Device Info** - Get device information
+- **Reconnect** - Reconnect to WhatsApp Web
 
 ### Send Messages
 
-* **Send Text** - Send text messages
-* **Send Image** - Send images with optional caption
-* **Send Audio** - Send audio files
-* **Send Contact** - Send contact information
-* **Send Location** - Send location coordinates
-* **Send Poll** - Send polls with multiple options
-* **Send Chat Presence** - Send typing indicator (start/stop)
-* **Send Presence** - Send presence status (available/unavailable)
+- **Send Text** - Send text messages
+- **Send Image** - Send images with optional caption
+- **Send Audio** - Send audio files
+- **Send Contact** - Send contact information
+- **Send Location** - Send location coordinates
+- **Send Poll** - Send polls with multiple options
+- **Send Chat Presence** - Send typing indicator (start/stop)
+- **Send Presence** - Send presence status (available/unavailable)
 
 ### Message Management
 
-* **Delete Message** - Delete a message
-* **Revoke Message** - Revoke a message for everyone
-* **React to Message** - Add emoji reactions to messages
-* **Update Message** - Update message content
-* **Read Message** - Mark message as read
-* **Star Message** - Star a message
-* **Unstar Message** - Unstar a message
+- **Delete Message** - Delete a message
+- **Revoke Message** - Revoke a message for everyone
+- **React to Message** - Add emoji reactions to messages
+- **Update Message** - Update message content
+- **Read Message** - Mark message as read
+- **Star Message** - Star a message
+- **Unstar Message** - Unstar a message
 
 ### Group Management
 
-* **Create Group** - Create new WhatsApp groups
-* **Add Participant** - Add participants to groups
-* **Remove Participant** - Remove participants from groups
-* **Promote Participant** - Promote participants to admin
-* **Demote Participant** - Demote participants from admin
-* **Leave Group** - Leave a group
-* **Join Group With Link** - Join group using invite link
-* **Get Participant Requests** - Get list of participant requests to join group
-* **Approve Participant Request** - Approve participant request to join group
-* **Reject Participant Request** - Reject participant request to join group
-* **Set Group Name** - Set group name
-* **Set Group Topic** - Set or remove group topic/description
-* **Set Group Locked Status** - Lock/unlock group so only admins can modify group info
-* **Set Group Announce Mode** - Enable/disable announce mode so only admins can send messages
+- **Create Group** - Create new WhatsApp groups
+- **Add Participant** - Add participants to groups
+- **Remove Participant** - Remove participants from groups
+- **Promote Participant** - Promote participants to admin
+- **Demote Participant** - Demote participants from admin
+- **Leave Group** - Leave a group
+- **Join Group With Link** - Join group using invite link
+- **Get Participant Requests** - Get list of participant requests to join group
+- **Approve Participant Request** - Approve participant request to join group
+- **Reject Participant Request** - Reject participant request to join group
+- **Set Group Name** - Set group name
+- **Set Group Topic** - Set or remove group topic/description
+- **Set Group Locked Status** - Lock/unlock group so only admins can modify group info
+- **Set Group Announce Mode** - Enable/disable announce mode so only admins can send messages
+- **Get Group Info** - Get information about a group
+- **Get Group Info From Link** - Get group information from an invitation link
+
+### Chat Management
+
+- **List Chats** - Get a list of all chat conversations
+- **Get Chat Messages** - Retrieve messages from a specific chat
+- **Label Chat** - Apply or remove a label from a chat
+- **Pin Chat** - Pin or unpin a chat in the conversation list
 
 ### User Operations
 
-* **Get User Info** - Get user profile information
-* **Get Avatar** - Get user avatar image
-* **Set Avatar** - Set user avatar image
-* **Get Business Profile** - Get business profile information
-* **Get Privacy Settings** - Get privacy settings
-* **Check Contact** - Check if contact is on WhatsApp
+- **Get User Info** - Get user profile information
+- **Get Avatar** - Get user avatar image
+- **Set Avatar** - Set user avatar image
+- **Get Business Profile** - Get business profile information
+- **Get Privacy Settings** - Get privacy settings
+- **Check Contact** - Check if contact is on WhatsApp
 
 ## Credentials
 
@@ -124,10 +137,10 @@ The credentials use HTTP Basic Authentication to connect to your GOWA API instan
 
 ## Resources
 
-* [n8n community nodes documentation](https://docs.n8n.io/integrations/community-nodes/)
-* [GOWA GitHub Repository](https://github.com/aldinokemal/go-whatsapp-web-multidevice)
-* [GOWA API Documentation](https://github.com/aldinokemal/go-whatsapp-web-multidevice/blob/main/docs/openapi.yaml)
-* [npm package](https://www.npmjs.com/package/@aldinokemal2104/n8n-nodes-gowa)
+- [n8n community nodes documentation](https://docs.n8n.io/integrations/community-nodes/)
+- [GOWA GitHub Repository](https://github.com/aldinokemal/go-whatsapp-web-multidevice)
+- [GOWA API Documentation](https://github.com/aldinokemal/go-whatsapp-web-multidevice/blob/main/docs/openapi.yaml)
+- [npm package](https://www.npmjs.com/package/@aldinokemal2104/n8n-nodes-gowa)
 
 ## License
 

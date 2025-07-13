@@ -43,6 +43,18 @@ export const groupOperations: INodeProperties[] = [
 				action: 'Demote participant from admin',
 			},
 			{
+				name: 'Get Group Info',
+				value: 'getGroupInfo',
+				description: 'Get information about a group',
+				action: 'Get group info',
+			},
+			{
+				name: 'Get Group Info From Link',
+				value: 'getGroupInfoFromLink',
+				description: 'Get group information from invitation link',
+				action: 'Get group info from link',
+			},
+			{
 				name: 'Get Participant Requests',
 				value: 'getParticipantRequests',
 				description: 'Get list of participant requests to join group',
@@ -108,6 +120,20 @@ export const groupOperations: INodeProperties[] = [
 
 export const groupProperties: INodeProperties[] = [
 	{
+		displayName: 'Group Title',
+		name: 'groupTitle',
+		type: 'string',
+		required: true,
+		displayOptions: {
+			show: {
+				resource: ['group'],
+				operation: ['createGroup'],
+			},
+		},
+		default: '',
+		description: 'Title for the new group',
+	},
+	{
 		displayName: 'Group Name',
 		name: 'groupName',
 		type: 'string',
@@ -115,11 +141,11 @@ export const groupProperties: INodeProperties[] = [
 		displayOptions: {
 			show: {
 				resource: ['group'],
-				operation: ['createGroup', 'setGroupName'],
+				operation: ['setGroupName'],
 			},
 		},
 		default: '',
-		description: 'Name of the group',
+		description: 'New name for the group',
 	},
 	{
 		displayName: 'Participants',
@@ -143,7 +169,7 @@ export const groupProperties: INodeProperties[] = [
 		displayOptions: {
 			show: {
 				resource: ['group'],
-				operation: ['addParticipant', 'removeParticipant', 'promoteParticipant', 'demoteParticipant', 'leaveGroup', 'getParticipantRequests', 'approveParticipantRequest', 'rejectParticipantRequest', 'setGroupName', 'setGroupLocked', 'setGroupAnnounce', 'setGroupTopic'],
+				operation: ['addParticipant', 'removeParticipant', 'promoteParticipant', 'demoteParticipant', 'leaveGroup', 'getGroupInfo', 'getParticipantRequests', 'approveParticipantRequest', 'rejectParticipantRequest', 'setGroupName', 'setGroupLocked', 'setGroupAnnounce', 'setGroupTopic'],
 			},
 		},
 		default: '',
@@ -186,7 +212,7 @@ export const groupProperties: INodeProperties[] = [
 		displayOptions: {
 			show: {
 				resource: ['group'],
-				operation: ['joinGroupWithLink'],
+				operation: ['joinGroupWithLink', 'getGroupInfoFromLink'],
 			},
 		},
 		default: '',
@@ -256,10 +282,10 @@ export const executeGroupOperation: OperationExecutor = async function (
 
 	switch (operation) {
 		case 'createGroup':
-			const groupName = this.getNodeParameter('groupName', itemIndex) as string;
+			const groupTitle = this.getNodeParameter('groupTitle', itemIndex) as string;
 			const groupParticipants = this.getNodeParameter('groupParticipants', itemIndex, '') as string;
-			requestOptions.url = `${baseUrl.replace(/\/$/, '')}/group/create`;
-			requestOptions.body.name = groupName;
+			requestOptions.url = `${baseUrl.replace(/\/$/, '')}/group`;
+			requestOptions.body.title = groupTitle;
 			if (groupParticipants) {
 				requestOptions.body.participants = groupParticipants.split(',').map(p => p.trim());
 			}
@@ -307,6 +333,20 @@ export const executeGroupOperation: OperationExecutor = async function (
 			const groupLink = this.getNodeParameter('groupLink', itemIndex) as string;
 			requestOptions.url = `${baseUrl.replace(/\/$/, '')}/group/join-with-link`;
 			requestOptions.body.link = groupLink;
+			break;
+
+		case 'getGroupInfo':
+			const infoGroupId = this.getNodeParameter('groupId', itemIndex) as string;
+			requestOptions.method = 'GET' as IHttpRequestMethods;
+			requestOptions.url = `${baseUrl.replace(/\/$/, '')}/group/info?group_id=${encodeURIComponent(infoGroupId)}`;
+			delete requestOptions.body;
+			break;
+
+		case 'getGroupInfoFromLink':
+			const infoGroupLink = this.getNodeParameter('groupLink', itemIndex) as string;
+			requestOptions.method = 'GET' as IHttpRequestMethods;
+			requestOptions.url = `${baseUrl.replace(/\/$/, '')}/group/info-from-link?link=${encodeURIComponent(infoGroupLink)}`;
+			delete requestOptions.body;
 			break;
 
 		case 'getParticipantRequests':
