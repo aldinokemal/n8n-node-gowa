@@ -50,7 +50,7 @@ export const chatProperties: INodeProperties[] = [
 		displayOptions: {
 			show: {
 				resource: ['chat'],
-				operation: ['listChats'],
+				operation: ['listChats', 'getChatMessages'],
 			},
 		},
 		typeOptions: {
@@ -79,11 +79,11 @@ export const chatProperties: INodeProperties[] = [
 		displayOptions: {
 			show: {
 				resource: ['chat'],
-				operation: ['listChats', 'getChatMessages'],
+				operation: ['listChats'],
 			},
 		},
 		default: '',
-		description: 'Search term',
+		description: 'Search chats by name',
 	},
 	{
 		displayName: 'Has Media',
@@ -113,6 +113,7 @@ export const chatProperties: INodeProperties[] = [
 		},
 		default: '',
 		description: 'Chat JID (e.g., phone@s.whatsapp.net for individual or groupid@g.us for group)',
+		placeholder: '6289685028129@s.whatsapp.net',
 	},
 	{
 		displayName: 'Start Time',
@@ -156,15 +157,42 @@ export const chatProperties: INodeProperties[] = [
 	{
 		displayName: 'Is From Me',
 		name: 'isFromMe',
-		type: 'boolean',
+		type: 'options',
 		displayOptions: {
 			show: {
 				resource: ['chat'],
 				operation: ['getChatMessages'],
 			},
 		},
-		default: false,
-		description: 'Whether to filter messages by sender (true for you, false for others)',
+		options: [
+			{
+				name: 'All Messages',
+				value: '',
+			},
+			{
+				name: 'Messages Sent by Me',
+				value: true,
+			},
+			{
+				name: 'Messages Received',
+				value: false,
+			},
+		],
+		default: '',
+		description: 'Filter messages by sender (true for messages sent by you, false for received messages). When both media_only=true and isFromMe=false are provided, media_only takes precedence and will return all media messages regardless of sender.',
+	},
+	{
+		displayName: 'Search',
+		name: 'search',
+		type: 'string',
+		displayOptions: {
+			show: {
+				resource: ['chat'],
+				operation: ['getChatMessages'],
+			},
+		},
+		default: '',
+		description: 'Search messages by content text',
 	},
 
 	// Properties for Pin Chat
@@ -212,15 +240,19 @@ export const executeChatOperation: OperationExecutor = async function (
 		case 'getChatMessages':
 			const chatJidForMessages = this.getNodeParameter('chatJid', itemIndex) as string;
 			requestOptions.url = `${baseUrl.replace(/\/$/, '')}/chat/${chatJidForMessages}/messages`;
+			const isFromMeValue = this.getNodeParameter('isFromMe', itemIndex);
 			requestOptions.qs = {
 				limit: this.getNodeParameter('limit', itemIndex),
 				offset: this.getNodeParameter('offset', itemIndex),
 				start_time: this.getNodeParameter('startTime', itemIndex),
 				end_time: this.getNodeParameter('endTime', itemIndex),
 				media_only: this.getNodeParameter('mediaOnly', itemIndex),
-				is_from_me: this.getNodeParameter('isFromMe', itemIndex),
 				search: this.getNodeParameter('search', itemIndex),
 			};
+			// Only add is_from_me if it's explicitly set (not empty string)
+			if (isFromMeValue !== '') {
+				requestOptions.qs.is_from_me = isFromMeValue;
+			}
 			break;
 		case 'pinChat':
 			const chatJidForPin = this.getNodeParameter('chatJid', itemIndex) as string;

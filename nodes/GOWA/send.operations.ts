@@ -457,16 +457,17 @@ async function handleFileUpload(this: IExecuteFunctions, endpoint: string, fileP
 	const binaryPropertyName = this.getNodeParameter(fileParam, itemIndex) as string;
 
 	const binaryData = this.helpers.assertBinaryData(itemIndex, binaryPropertyName);
+	const fileBuffer = await this.helpers.getBinaryDataBuffer(itemIndex, binaryPropertyName);
 
 	// Get credentials to retrieve base URL
 	const credentials = await this.getCredentials('goWhatsappApi');
 	const baseUrl = credentials.hostUrl as string || 'http://localhost:3000';
 	const fullUrl = `${baseUrl.replace(/\/$/, '')}${endpoint}`;
 
-	const formData = {
+	const formData: any = {
 		phone: phoneNumber,
 		[apiFieldName]: {
-			value: binaryData.data,
+			value: fileBuffer,
 			options: {
 				filename: binaryData.fileName || 'file',
 				contentType: binaryData.mimeType,
@@ -506,9 +507,8 @@ async function handleFileUpload(this: IExecuteFunctions, endpoint: string, fileP
 		method: 'POST' as IHttpRequestMethods,
 		url: fullUrl,
 		formData,
-		json: true,
 	});
-	return response;
+	return JSON.parse(response);
 }
 
 export const executeSendOperation: OperationExecutor = async function (
