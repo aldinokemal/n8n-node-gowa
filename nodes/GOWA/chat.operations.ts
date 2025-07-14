@@ -50,7 +50,7 @@ export const chatProperties: INodeProperties[] = [
 		displayOptions: {
 			show: {
 				resource: ['chat'],
-				operation: ['listChats'],
+				operation: ['listChats', 'getChatMessages'],
 			},
 		},
 		typeOptions: {
