@@ -41,8 +41,7 @@ This node supports the following operations:
 ### Send Messages
 
 - **Send Text** - Send text messages
-- **Send Image** - Send images with optional caption
-- **Send Audio** - Send audio files
+- **Send Media** - Send media files (image, audio, video, or any file) with optional caption
 - **Send Contact** - Send contact information
 - **Send Location** - Send location coordinates
 - **Send Poll** - Send polls with multiple options
@@ -119,6 +118,18 @@ The credentials use HTTP Basic Authentication to connect to your GOWA API instan
 3. Enter the phone number (with country code, without +)
 4. Enter your message text
 5. Execute the node
+
+### Example: Send Media
+
+1. Select **Send** as the resource
+2. Select **Send Media** as the operation
+3. Enter the phone number (with country code, without +)
+4. Choose the media type (Image, Audio, Video, or File)
+5. Choose the media source (File Upload or URL - note: Files can only be uploaded)
+6. For file uploads: specify the binary property name containing the file
+7. For URLs: enter the media URL
+8. Optionally add a caption
+9. Execute the node
 
 ### Example: Get Business Profile
 
