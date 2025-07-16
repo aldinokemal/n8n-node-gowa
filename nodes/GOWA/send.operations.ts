@@ -19,12 +19,6 @@ export const sendOperations: INodeProperties[] = [
 		},
 		options: [
 			{
-				name: 'Send Audio',
-				value: 'sendAudio',
-				description: 'Send an audio file',
-				action: 'Send an audio file',
-			},
-			{
 				name: 'Send Chat Presence',
 				value: 'sendChatPresence',
 				description: 'Send typing indicator to start or stop showing that you are composing a message',
@@ -37,12 +31,6 @@ export const sendOperations: INodeProperties[] = [
 				action: 'Send a contact',
 			},
 			{
-				name: 'Send Image',
-				value: 'sendImage',
-				description: 'Send an image',
-				action: 'Send an image',
-			},
-			{
 				name: 'Send Link',
 				value: 'sendLink',
 				description: 'Send a link',
@@ -53,6 +41,12 @@ export const sendOperations: INodeProperties[] = [
 				value: 'sendLocation',
 				description: 'Send a location',
 				action: 'Send a location',
+			},
+			{
+				name: 'Send Media',
+				value: 'sendMedia',
+				description: 'Send media files (image, audio, video, or any file)',
+				action: 'Send media files',
 			},
 			{
 				name: 'Send Poll',
@@ -86,7 +80,7 @@ export const sendProperties: INodeProperties[] = [
 		displayOptions: {
 			show: {
 				resource: ['send'],
-				operation: ['sendText', 'sendImage', 'sendContact', 'sendLink', 'sendLocation', 'sendAudio', 'sendChatPresence', 'sendPoll'],
+				operation: ['sendText', 'sendContact', 'sendLink', 'sendLocation', 'sendChatPresence', 'sendPoll', 'sendMedia'],
 			},
 		},
 		default: '',
@@ -172,119 +166,123 @@ export const sendProperties: INodeProperties[] = [
 		default: 'start',
 	},
 	{
-		displayName: 'Image Source',
-		name: 'imageSource',
+		displayName: 'Media Type',
+		name: 'mediaType',
 		type: 'options',
 		required: true,
 		displayOptions: {
 			show: {
 				resource: ['send'],
-				operation: ['sendImage'],
+				operation: ['sendMedia'],
+			},
+		},
+		options: [
+			{
+				name: 'Image',
+				value: 'image',
+				description: 'Send an image file',
+			},
+			{
+				name: 'Audio',
+				value: 'audio',
+				description: 'Send an audio file',
+			},
+			{
+				name: 'Video',
+				value: 'video',
+				description: 'Send a video file',
+			},
+			{
+				name: 'File',
+				value: 'file',
+				description: 'Send any file',
+			},
+		],
+		default: 'image',
+		description: 'Type of media to send',
+	},
+	{
+		displayName: 'Media Source',
+		name: 'mediaSource',
+		type: 'options',
+		required: true,
+		displayOptions: {
+			show: {
+				resource: ['send'],
+				operation: ['sendMedia'],
+				mediaType: ['image', 'audio', 'video'],
 			},
 		},
 		options: [
 			{
 				name: 'File Upload',
 				value: 'file',
-				description: 'Upload image file from binary data',
+				description: 'Upload file from binary data',
 			},
 			{
-				name: 'Image URL',
+				name: 'URL',
 				value: 'url',
-				description: 'Send image from URL',
+				description: 'Send from URL',
 			},
 		],
-		default: 'url',
-		description: 'Choose whether to upload a file or use an image URL',
+		default: 'file',
+		description: 'Choose whether to upload a file or use a URL',
 	},
 	{
-		displayName: 'Image File Property',
-		name: 'imageFile',
-		type: 'string',
-		required: true,
-		displayOptions: {
-			show: {
-				resource: ['send'],
-				operation: ['sendImage'],
-				imageSource: ['file'],
-			},
-		},
-		default: 'data',
-		description: 'Name of the binary property containing the image file',
-	},
-	{
-		displayName: 'Image URL',
-		name: 'imageUrl',
-		type: 'string',
-		required: true,
-		displayOptions: {
-			show: {
-				resource: ['send'],
-				operation: ['sendImage'],
-				imageSource: ['url'],
-			},
-		},
-		default: '',
-		placeholder: 'https://example.com/image.jpg',
-		description: 'URL of the image to send',
-	},
-	{
-		displayName: 'Audio Source',
-		name: 'audioSource',
+		displayName: 'Media Source',
+		name: 'mediaSource',
 		type: 'options',
 		required: true,
 		displayOptions: {
 			show: {
 				resource: ['send'],
-				operation: ['sendAudio'],
+				operation: ['sendMedia'],
+				mediaType: ['file'],
 			},
 		},
 		options: [
 			{
 				name: 'File Upload',
 				value: 'file',
-				description: 'Upload audio file from binary data',
-			},
-			{
-				name: 'Audio URL',
-				value: 'url',
-				description: 'Send audio from URL',
+				description: 'Upload file from binary data',
 			},
 		],
-		default: 'url',
-		description: 'Choose whether to upload a file or use an audio URL',
+		default: 'file',
+		description: 'Files can only be uploaded, not sent via URL',
 	},
 	{
-		displayName: 'Audio File Property',
-		name: 'audioFile',
+		displayName: 'Binary Property',
+		name: 'binaryProperty',
 		type: 'string',
 		required: true,
 		displayOptions: {
 			show: {
 				resource: ['send'],
-				operation: ['sendAudio'],
-				audioSource: ['file'],
+				operation: ['sendMedia'],
+				mediaSource: ['file'],
 			},
 		},
 		default: 'data',
-		description: 'Name of the binary property containing the audio file',
+		description: 'Name of the binary property containing the file to upload',
 	},
 	{
-		displayName: 'Audio URL',
-		name: 'audioUrl',
+		displayName: 'Media URL',
+		name: 'mediaUrl',
 		type: 'string',
 		required: true,
 		displayOptions: {
 			show: {
 				resource: ['send'],
-				operation: ['sendAudio'],
-				audioSource: ['url'],
+				operation: ['sendMedia'],
+				mediaSource: ['url'],
+				mediaType: ['image', 'audio', 'video'],
 			},
 		},
 		default: '',
-		placeholder: 'https://example.com/audio.mp3',
-		description: 'URL of the audio to send',
+		placeholder: 'https://example.com/media.jpg',
+		description: 'URL of the media to send',
 	},
+
 	{
 		displayName: 'Caption',
 		name: 'caption',
@@ -292,7 +290,7 @@ export const sendProperties: INodeProperties[] = [
 		displayOptions: {
 			show: {
 				resource: ['send'],
-				operation: ['sendImage', 'sendLink'],
+				operation: ['sendMedia', 'sendLink'],
 			},
 		},
 		default: '',
@@ -363,7 +361,7 @@ export const sendProperties: INodeProperties[] = [
 		displayOptions: {
 			show: {
 				resource: ['send'],
-				operation: ['sendText', 'sendImage', 'sendContact', 'sendLink', 'sendLocation', 'sendAudio'],
+				operation: ['sendText', 'sendContact', 'sendLink', 'sendLocation', 'sendMedia'],
 			},
 		},
 		default: '',
@@ -388,7 +386,8 @@ export const sendProperties: INodeProperties[] = [
 		displayOptions: {
 			show: {
 				resource: ['send'],
-				operation: ['sendImage'],
+				operation: ['sendMedia'],
+				mediaType: ['image', 'video'],
 			},
 		},
 		default: false,
@@ -401,7 +400,8 @@ export const sendProperties: INodeProperties[] = [
 		displayOptions: {
 			show: {
 				resource: ['send'],
-				operation: ['sendImage'],
+				operation: ['sendMedia'],
+				mediaType: ['image', 'video'],
 			},
 		},
 		default: false,
@@ -491,7 +491,7 @@ async function handleFileUpload(this: IExecuteFunctions, endpoint: string, fileP
 		formData.is_forwarded = 'true';
 	}
 
-	if (apiFieldName === 'image') {
+	if (apiFieldName === 'image' || apiFieldName === 'video') {
 		const viewOnce = this.getNodeParameter('viewOnce', itemIndex, false) as boolean;
 		if (viewOnce) {
 			formData.view_once = 'true';
@@ -575,16 +575,21 @@ export const executeSendOperation: OperationExecutor = async function (
 			requestOptions.body.type = presenceType;
 			break;
 
-		case 'sendImage':
-			const imageSource = this.getNodeParameter('imageSource', itemIndex) as string;
+		case 'sendMedia':
+			const mediaType = this.getNodeParameter('mediaType', itemIndex) as string;
+			const mediaSource = this.getNodeParameter('mediaSource', itemIndex) as string;
 
-			if (imageSource === 'file') {
-				return await handleFileUpload.call(this, '/send/image', 'imageFile', 'image', itemIndex);
+			if (mediaSource === 'file') {
+				return await handleFileUpload.call(this, `/send/${mediaType}`, 'binaryProperty', mediaType, itemIndex);
 			} else {
-				// Handle image URL
-				const imageUrl = this.getNodeParameter('imageUrl', itemIndex) as string;
-				requestOptions.url = `${baseUrl.replace(/\/$/, '')}/send/image`;
-				requestOptions.body.image_url = imageUrl;
+				// Handle media URL (only for image, audio, video)
+				if (mediaType === 'file') {
+					throw new NodeOperationError(this.getNode(), 'File type does not support URL source. Please use file upload.');
+				}
+
+				const mediaUrl = this.getNodeParameter('mediaUrl', itemIndex) as string;
+				requestOptions.url = `${baseUrl.replace(/\/$/, '')}/send/${mediaType}`;
+				requestOptions.body[`${mediaType}_url`] = mediaUrl;
 
 				// Add optional parameters
 				const caption = this.getNodeParameter('caption', itemIndex, '') as string;
@@ -592,14 +597,16 @@ export const executeSendOperation: OperationExecutor = async function (
 					requestOptions.body.caption = caption;
 				}
 
-				const viewOnce = this.getNodeParameter('viewOnce', itemIndex, false) as boolean;
-				if (viewOnce) {
-					requestOptions.body.view_once = viewOnce;
-				}
+				if (mediaType === 'image' || mediaType === 'video') {
+					const viewOnce = this.getNodeParameter('viewOnce', itemIndex, false) as boolean;
+					if (viewOnce) {
+						requestOptions.body.view_once = viewOnce;
+					}
 
-				const compress = this.getNodeParameter('compress', itemIndex, false) as boolean;
-				if (compress) {
-					requestOptions.body.compress = compress;
+					const compress = this.getNodeParameter('compress', itemIndex, false) as boolean;
+					if (compress) {
+						requestOptions.body.compress = compress;
+					}
 				}
 			}
 			break;
@@ -618,19 +625,6 @@ export const executeSendOperation: OperationExecutor = async function (
 			requestOptions.url = `${baseUrl.replace(/\/$/, '')}/send/location`;
 			requestOptions.body.latitude = latitude;
 			requestOptions.body.longitude = longitude;
-			break;
-
-		case 'sendAudio':
-			const audioSource = this.getNodeParameter('audioSource', itemIndex) as string;
-
-			if (audioSource === 'file') {
-				return await handleFileUpload.call(this, '/send/audio', 'audioFile', 'audio', itemIndex);
-			} else {
-				// Handle audio URL
-				const audioUrl = this.getNodeParameter('audioUrl', itemIndex) as string;
-				requestOptions.url = `${baseUrl.replace(/\/$/, '')}/send/audio`;
-				requestOptions.body.audio_url = audioUrl;
-			}
 			break;
 
 		case 'sendPoll':
