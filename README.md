@@ -11,7 +11,7 @@ GOWA provides a comprehensive WhatsApp Web API implementation written in Go, sup
 [Installation](#installation)  
 [Operations](#operations)  
 [Credentials](#credentials)  
-[Usage](#usage)  
+[Usage](#usage)
 
 ## Installation
 
@@ -41,6 +41,7 @@ This node supports the following operations:
 ### Send Messages
 
 - **Send Text** - Send text messages
+- **Send Link** - Send links with optional caption
 - **Send Media** - Send media files (image, audio, video, or any file) with optional caption
 - **Send Contact** - Send contact information
 - **Send Location** - Send location coordinates
@@ -81,7 +82,6 @@ This node supports the following operations:
 
 - **List Chats** - Get a list of all chat conversations
 - **Get Chat Messages** - Retrieve messages from a specific chat
-- **Label Chat** - Apply or remove a label from a chat
 - **Pin Chat** - Pin or unpin a chat in the conversation list
 
 ### User Operations
