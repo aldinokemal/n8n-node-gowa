@@ -61,16 +61,16 @@ export const sendOperations: INodeProperties[] = [
 				action: 'Send presence status',
 			},
 			{
-				name: 'Send Text',
-				value: 'sendText',
-				description: 'Send a text message',
-				action: 'Send a text message',
-			},
-			{
 				name: 'Send Sticker',
 				value: 'sendSticker',
 				description: 'Send sticker with automatic conversion to WebP format',
 				action: 'Send a sticker',
+			},
+			{
+				name: 'Send Text',
+				value: 'sendText',
+				description: 'Send a text message',
+				action: 'Send a text message',
 			},
 		],
 		default: 'sendText',

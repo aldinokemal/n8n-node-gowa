@@ -43,22 +43,16 @@ export const groupOperations: INodeProperties[] = [
 				action: 'Demote participant from admin',
 			},
 			{
+				name: 'Export Group Participants',
+				value: 'exportGroupParticipants',
+				description: 'Export group participants as CSV',
+				action: 'Export group participants as CSV',
+			},
+			{
 				name: 'Get Group Info',
 				value: 'getGroupInfo',
 				description: 'Get information about a group',
 				action: 'Get group info',
-			},
-			{
-				name: 'Get Group Participants',
-				value: 'getGroupParticipants',
-				description: 'Get list of participants in a group',
-				action: 'Get list of participants in a group',
-			},
-			{
-				name: 'Get Group Invite Link',
-				value: 'getGroupInviteLink',
-				description: 'Get or reset group invite link',
-				action: 'Get or reset group invite link',
 			},
 			{
 				name: 'Get Group Info From Link',
@@ -67,16 +61,22 @@ export const groupOperations: INodeProperties[] = [
 				action: 'Get group info from link',
 			},
 			{
+				name: 'Get Group Invite Link',
+				value: 'getGroupInviteLink',
+				description: 'Get or reset group invite link',
+				action: 'Get or reset group invite link',
+			},
+			{
+				name: 'Get Group Participants',
+				value: 'getGroupParticipants',
+				description: 'Get list of participants in a group',
+				action: 'Get list of participants in a group',
+			},
+			{
 				name: 'Get Participant Requests',
 				value: 'getParticipantRequests',
 				description: 'Get list of participant requests to join group',
 				action: 'Get list of participant requests to join group',
-			},
-			{
-				name: 'Export Group Participants',
-				value: 'exportGroupParticipants',
-				description: 'Export group participants as CSV',
-				action: 'Export group participants as CSV',
 			},
 			{
 				name: 'Join Group With Link',
