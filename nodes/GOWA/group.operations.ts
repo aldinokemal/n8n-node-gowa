@@ -49,6 +49,18 @@ export const groupOperations: INodeProperties[] = [
 				action: 'Get group info',
 			},
 			{
+				name: 'Get Group Participants',
+				value: 'getGroupParticipants',
+				description: 'Get list of participants in a group',
+				action: 'Get list of participants in a group',
+			},
+			{
+				name: 'Get Group Invite Link',
+				value: 'getGroupInviteLink',
+				description: 'Get or reset group invite link',
+				action: 'Get or reset group invite link',
+			},
+			{
 				name: 'Get Group Info From Link',
 				value: 'getGroupInfoFromLink',
 				description: 'Get group information from invitation link',
@@ -59,6 +71,12 @@ export const groupOperations: INodeProperties[] = [
 				value: 'getParticipantRequests',
 				description: 'Get list of participant requests to join group',
 				action: 'Get list of participant requests to join group',
+			},
+			{
+				name: 'Export Group Participants',
+				value: 'exportGroupParticipants',
+				description: 'Export group participants as CSV',
+				action: 'Export group participants as CSV',
 			},
 			{
 				name: 'Join Group With Link',
@@ -169,7 +187,7 @@ export const groupProperties: INodeProperties[] = [
 		displayOptions: {
 			show: {
 				resource: ['group'],
-				operation: ['addParticipant', 'removeParticipant', 'promoteParticipant', 'demoteParticipant', 'leaveGroup', 'getGroupInfo', 'getParticipantRequests', 'approveParticipantRequest', 'rejectParticipantRequest', 'setGroupName', 'setGroupLocked', 'setGroupAnnounce', 'setGroupTopic'],
+				operation: ['addParticipant', 'removeParticipant', 'promoteParticipant', 'demoteParticipant', 'leaveGroup', 'getGroupInfo', 'getGroupParticipants', 'getGroupInviteLink', 'exportGroupParticipants', 'getParticipantRequests', 'approveParticipantRequest', 'rejectParticipantRequest', 'setGroupName', 'setGroupLocked', 'setGroupAnnounce', 'setGroupTopic'],
 			},
 		},
 		default: '',
@@ -261,6 +279,19 @@ export const groupProperties: INodeProperties[] = [
 		default: '',
 		description: 'The group topic/description. Leave empty to remove the topic.',
 	},
+	{
+		displayName: 'Reset Invite Link',
+		name: 'resetInviteLink',
+		type: 'boolean',
+		displayOptions: {
+			show: {
+				resource: ['group'],
+				operation: ['getGroupInviteLink'],
+			},
+		},
+		default: false,
+		description: 'Whether to reset and generate a new invite link',
+	},
 ];
 
 
@@ -346,6 +377,28 @@ export const executeGroupOperation: OperationExecutor = async function (
 			const infoGroupLink = this.getNodeParameter('groupLink', itemIndex) as string;
 			requestOptions.method = 'GET' as IHttpRequestMethods;
 			requestOptions.url = `${baseUrl.replace(/\/$/, '')}/group/info-from-link?link=${encodeURIComponent(infoGroupLink)}`;
+			delete requestOptions.body;
+			break;
+
+		case 'getGroupParticipants':
+			const participantsGroupId = this.getNodeParameter('groupId', itemIndex) as string;
+			requestOptions.method = 'GET' as IHttpRequestMethods;
+			requestOptions.url = `${baseUrl.replace(/\/$/, '')}/group/participants?group_id=${encodeURIComponent(participantsGroupId)}`;
+			delete requestOptions.body;
+			break;
+
+		case 'getGroupInviteLink':
+			const inviteLinkGroupId = this.getNodeParameter('groupId', itemIndex) as string;
+			const resetInviteLink = this.getNodeParameter('resetInviteLink', itemIndex, false) as boolean;
+			requestOptions.method = 'GET' as IHttpRequestMethods;
+			requestOptions.url = `${baseUrl.replace(/\/$/, '')}/group/invite-link?group_id=${encodeURIComponent(inviteLinkGroupId)}&reset=${resetInviteLink}`;
+			delete requestOptions.body;
+			break;
+
+		case 'exportGroupParticipants':
+			const exportGroupId = this.getNodeParameter('groupId', itemIndex) as string;
+			requestOptions.method = 'GET' as IHttpRequestMethods;
+			requestOptions.url = `${baseUrl.replace(/\/$/, '')}/group/participants/export?group_id=${encodeURIComponent(exportGroupId)}`;
 			delete requestOptions.body;
 			break;
 

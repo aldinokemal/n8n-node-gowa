@@ -11,7 +11,7 @@ GOWA provides a comprehensive WhatsApp Web API implementation written in Go, sup
 [Installation](#installation)  
 [Operations](#operations)  
 [Credentials](#credentials)  
-[Usage](#usage)  
+[Usage](#usage)
 
 ## Installation
 
@@ -41,7 +41,9 @@ This node supports the following operations:
 ### Send Messages
 
 - **Send Text** - Send text messages
+- **Send Link** - Send links with optional caption
 - **Send Media** - Send media files (image, audio, video, or any file) with optional caption
+- **Send Sticker** - Send sticker with automatic conversion to WebP format
 - **Send Contact** - Send contact information
 - **Send Location** - Send location coordinates
 - **Send Poll** - Send polls with multiple options
@@ -75,14 +77,17 @@ This node supports the following operations:
 - **Set Group Locked Status** - Lock/unlock group so only admins can modify group info
 - **Set Group Announce Mode** - Enable/disable announce mode so only admins can send messages
 - **Get Group Info** - Get information about a group
+- **Get Group Participants** - Get list of participants in a group
+- **Get Group Invite Link** - Get or reset group invite link
+- **Export Group Participants** - Export group participants as CSV
 - **Get Group Info From Link** - Get group information from an invitation link
 
 ### Chat Management
 
 - **List Chats** - Get a list of all chat conversations
 - **Get Chat Messages** - Retrieve messages from a specific chat
-- **Label Chat** - Apply or remove a label from a chat
 - **Pin Chat** - Pin or unpin a chat in the conversation list
+- **Set Disappearing Timer** - Set or disable disappearing messages for a chat
 
 ### User Operations
 

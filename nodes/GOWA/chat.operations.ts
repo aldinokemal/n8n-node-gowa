@@ -36,6 +36,12 @@ export const chatOperations: INodeProperties[] = [
 				description: 'Pin or unpin a chat',
 				action: 'Pin or unpin a chat',
 			},
+			{
+				name: 'Set Disappearing Timer',
+				value: 'setDisappearingTimer',
+				description: 'Set or disable disappearing messages for a chat',
+				action: 'Set or disable disappearing messages for a chat',
+			},
 		],
 		default: 'listChats',
 	},
@@ -108,7 +114,7 @@ export const chatProperties: INodeProperties[] = [
 		displayOptions: {
 			show: {
 				resource: ['chat'],
-				operation: ['getChatMessages', 'pinChat'],
+				operation: ['getChatMessages', 'pinChat', 'setDisappearingTimer'],
 			},
 		},
 		default: '',
@@ -210,6 +216,41 @@ export const chatProperties: INodeProperties[] = [
 		default: true,
 		description: 'Whether to pin (true) or unpin (false) the chat',
 	},
+
+	// Properties for Set Disappearing Timer
+	{
+		displayName: 'Timer',
+		name: 'timerSeconds',
+		type: 'options',
+		required: true,
+		displayOptions: {
+			show: {
+				resource: ['chat'],
+				operation: ['setDisappearingTimer'],
+			},
+		},
+		options: [
+			{
+				name: 'Off',
+				value: 0,
+				description: 'Disable disappearing messages',
+			},
+			{
+				name: '24 Hours',
+				value: 86400,
+			},
+			{
+				name: '7 Days',
+				value: 604800,
+			},
+			{
+				name: '90 Days',
+				value: 7776000,
+			},
+		],
+		default: 86400,
+		description: 'Timer duration for disappearing messages',
+	},
 ];
 
 export const executeChatOperation: OperationExecutor = async function (
@@ -260,6 +301,14 @@ export const executeChatOperation: OperationExecutor = async function (
 			requestOptions.url = `${baseUrl.replace(/\/$/, '')}/chat/${chatJidForPin}/pin`;
 			requestOptions.body = {
 				pinned: this.getNodeParameter('pinned', itemIndex),
+			};
+			break;
+		case 'setDisappearingTimer':
+			const chatJidForDisappearing = this.getNodeParameter('chatJid', itemIndex) as string;
+			requestOptions.method = 'POST';
+			requestOptions.url = `${baseUrl.replace(/\/$/, '')}/chat/${chatJidForDisappearing}/disappearing`;
+			requestOptions.body = {
+				timer_seconds: this.getNodeParameter('timerSeconds', itemIndex),
 			};
 			break;
 		default:

@@ -66,6 +66,12 @@ export const sendOperations: INodeProperties[] = [
 				description: 'Send a text message',
 				action: 'Send a text message',
 			},
+			{
+				name: 'Send Sticker',
+				value: 'sendSticker',
+				description: 'Send sticker with automatic conversion to WebP format',
+				action: 'Send a sticker',
+			},
 		],
 		default: 'sendText',
 	},
@@ -80,7 +86,7 @@ export const sendProperties: INodeProperties[] = [
 		displayOptions: {
 			show: {
 				resource: ['send'],
-				operation: ['sendText', 'sendContact', 'sendLink', 'sendLocation', 'sendChatPresence', 'sendPoll', 'sendMedia'],
+				operation: ['sendText', 'sendContact', 'sendLink', 'sendLocation', 'sendChatPresence', 'sendPoll', 'sendMedia', 'sendSticker'],
 			},
 		},
 		default: '',
@@ -450,6 +456,78 @@ export const sendProperties: INodeProperties[] = [
 		default: 1,
 		description: 'The maximum number of answers allowed for the poll',
 	},
+
+	// Properties for Send Sticker
+	{
+		displayName: 'Sticker Source',
+		name: 'stickerSource',
+		type: 'options',
+		required: true,
+		displayOptions: {
+			show: {
+				resource: ['send'],
+				operation: ['sendSticker'],
+			},
+		},
+		options: [
+			{
+				name: 'File Upload',
+				value: 'file',
+				description: 'Upload sticker from binary data',
+			},
+			{
+				name: 'URL',
+				value: 'url',
+				description: 'Send sticker from URL',
+			},
+		],
+		default: 'file',
+		description: 'Choose whether to upload a file or use a URL',
+	},
+	{
+		displayName: 'Binary Property',
+		name: 'stickerBinaryProperty',
+		type: 'string',
+		required: true,
+		displayOptions: {
+			show: {
+				resource: ['send'],
+				operation: ['sendSticker'],
+				stickerSource: ['file'],
+			},
+		},
+		default: 'data',
+		description: 'Name of the binary property containing the sticker file',
+	},
+	{
+		displayName: 'Sticker URL',
+		name: 'stickerUrl',
+		type: 'string',
+		required: true,
+		displayOptions: {
+			show: {
+				resource: ['send'],
+				operation: ['sendSticker'],
+				stickerSource: ['url'],
+			},
+		},
+		default: '',
+		placeholder: 'https://example.com/sticker.png',
+		description: 'URL of the sticker image (jpg/jpeg/png/webp/gif)',
+	},
+	{
+		displayName: 'Duration',
+		name: 'stickerDuration',
+		type: 'number',
+		displayOptions: {
+			show: {
+				resource: ['send'],
+				operation: ['sendSticker'],
+			},
+		},
+		default: 0,
+		description: 'Disappearing message duration in seconds (0 = no expiry)',
+	},
 ];
 
 async function handleFileUpload(this: IExecuteFunctions, endpoint: string, fileParam: string, apiFieldName: string, itemIndex: number): Promise<any> {
@@ -501,6 +579,49 @@ async function handleFileUpload(this: IExecuteFunctions, endpoint: string, fileP
 		if (compress) {
 			formData.compress = 'true';
 		}
+	}
+
+	const response = await this.helpers.requestWithAuthentication.call(this, 'goWhatsappApi', {
+		method: 'POST' as IHttpRequestMethods,
+		url: fullUrl,
+		formData,
+	});
+	return JSON.parse(response);
+}
+
+async function handleStickerUpload(
+	this: IExecuteFunctions,
+	itemIndex: number,
+): Promise<any> {
+	const phoneNumber = this.getNodeParameter('phoneNumber', itemIndex) as string;
+	const binaryPropertyName = this.getNodeParameter('stickerBinaryProperty', itemIndex) as string;
+
+	const binaryData = this.helpers.assertBinaryData(itemIndex, binaryPropertyName);
+	const fileBuffer = await this.helpers.getBinaryDataBuffer(itemIndex, binaryPropertyName);
+
+	const credentials = await this.getCredentials('goWhatsappApi');
+	const baseUrl = credentials.hostUrl as string || 'http://localhost:3000';
+	const fullUrl = `${baseUrl.replace(/\/$/, '')}/send/sticker`;
+
+	const formData: any = {
+		phone: phoneNumber,
+		sticker: {
+			value: fileBuffer,
+			options: {
+				filename: binaryData.fileName || 'sticker',
+				contentType: binaryData.mimeType,
+			},
+		},
+	};
+
+	const duration = this.getNodeParameter('stickerDuration', itemIndex, 0) as number;
+	if (duration > 0) {
+		formData.duration = duration.toString();
+	}
+
+	const isForwarded = this.getNodeParameter('isForwarded', itemIndex, false) as boolean;
+	if (isForwarded) {
+		formData.is_forwarded = 'true';
 	}
 
 	const response = await this.helpers.requestWithAuthentication.call(this, 'goWhatsappApi', {
@@ -635,6 +756,23 @@ export const executeSendOperation: OperationExecutor = async function (
 			requestOptions.body.question = question;
 			requestOptions.body.options = options.split(',').map((option: string) => option.trim());
 			requestOptions.body.max_answer = maxAnswer;
+			break;
+
+		case 'sendSticker':
+			const stickerSource = this.getNodeParameter('stickerSource', itemIndex) as string;
+
+			if (stickerSource === 'file') {
+				return await handleStickerUpload.call(this, itemIndex);
+			} else {
+				const stickerUrl = this.getNodeParameter('stickerUrl', itemIndex) as string;
+				requestOptions.url = `${baseUrl.replace(/\/$/, '')}/send/sticker`;
+				requestOptions.body.sticker_url = stickerUrl;
+
+				const stickerDuration = this.getNodeParameter('stickerDuration', itemIndex, 0) as number;
+				if (stickerDuration > 0) {
+					requestOptions.body.duration = stickerDuration;
+				}
+			}
 			break;
 
 		default:
