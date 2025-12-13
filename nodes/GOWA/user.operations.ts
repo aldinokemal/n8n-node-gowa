@@ -5,6 +5,7 @@ import {
 	NodeOperationError,
 } from 'n8n-workflow';
 import { OperationExecutor, RequestOptions } from './types';
+import { getDeviceIdHeader } from './app.operations';
 
 export const userOperations: INodeProperties[] = [
 	{
@@ -18,6 +19,12 @@ export const userOperations: INodeProperties[] = [
 			},
 		},
 		options: [
+			{
+				name: 'Change Push Name',
+				value: 'changePushName',
+				description: 'Update the display name (push name) shown to others in WhatsApp',
+				action: 'Change push name',
+			},
 			{
 				name: 'Check Contact',
 				value: 'checkContact',
@@ -35,6 +42,24 @@ export const userOperations: INodeProperties[] = [
 				value: 'getBusinessProfile',
 				description: 'Get business profile information',
 				action: 'Get business profile information',
+			},
+			{
+				name: 'Get My Contacts',
+				value: 'getMyContacts',
+				description: 'Get list of user contacts',
+				action: 'Get my contacts',
+			},
+			{
+				name: 'Get My Groups',
+				value: 'getMyGroups',
+				description: 'Get list of groups the user is in',
+				action: 'Get my groups',
+			},
+			{
+				name: 'Get My Newsletters',
+				value: 'getMyNewsletters',
+				description: 'Get list of newsletters the user follows',
+				action: 'Get my newsletters',
 			},
 			{
 				name: 'Get Privacy Settings',
@@ -86,6 +111,20 @@ export const userProperties: INodeProperties[] = [
 		default: 'data',
 		description: 'Name of the binary property containing the avatar image file',
 	},
+	{
+		displayName: 'Push Name',
+		name: 'pushName',
+		type: 'string',
+		required: true,
+		displayOptions: {
+			show: {
+				resource: ['user'],
+				operation: ['changePushName'],
+			},
+		},
+		default: '',
+		description: 'The new display name to set',
+	},
 ];
 
 export const executeUserOperation: OperationExecutor = async function (
@@ -93,9 +132,9 @@ export const executeUserOperation: OperationExecutor = async function (
 	operation: string,
 	itemIndex: number,
 ): Promise<any> {
-	// Get credentials to retrieve base URL
 	const credentials = await this.getCredentials('goWhatsappApi');
 	const baseUrl = credentials.hostUrl as string || 'http://localhost:3000';
+	const deviceIdHeader = await getDeviceIdHeader(this);
 
 	const requestOptions: RequestOptions = {
 		method: 'GET' as IHttpRequestMethods,
@@ -128,13 +167,14 @@ export const executeUserOperation: OperationExecutor = async function (
 					},
 				},
 			};
-			const response = await this.helpers.requestWithAuthentication.call(this, 'goWhatsappApi', {
+			const avatarResponse = await this.helpers.requestWithAuthentication.call(this, 'goWhatsappApi', {
 				method: 'POST' as IHttpRequestMethods,
 				url: `${baseUrl.replace(/\/$/, '')}/user/avatar`,
+				headers: deviceIdHeader,
 				formData,
 				json: true,
 			});
-			return response;
+			return avatarResponse;
 
 		case 'getPrivacySettings':
 			requestOptions.url = `${baseUrl.replace(/\/$/, '')}/user/my/privacy`;
@@ -152,12 +192,36 @@ export const executeUserOperation: OperationExecutor = async function (
 			requestOptions.qs.phone = businessPhone;
 			break;
 
+		case 'changePushName':
+			const pushName = this.getNodeParameter('pushName', itemIndex) as string;
+			const pushNameResponse = await this.helpers.requestWithAuthentication.call(this, 'goWhatsappApi', {
+				method: 'POST' as IHttpRequestMethods,
+				url: `${baseUrl.replace(/\/$/, '')}/user/pushname`,
+				headers: deviceIdHeader,
+				body: { push_name: pushName },
+				json: true,
+			});
+			return pushNameResponse;
+
+		case 'getMyGroups':
+			requestOptions.url = `${baseUrl.replace(/\/$/, '')}/user/my/groups`;
+			break;
+
+		case 'getMyNewsletters':
+			requestOptions.url = `${baseUrl.replace(/\/$/, '')}/user/my/newsletters`;
+			break;
+
+		case 'getMyContacts':
+			requestOptions.url = `${baseUrl.replace(/\/$/, '')}/user/my/contacts`;
+			break;
+
 		default:
 			throw new NodeOperationError(this.getNode(), `Unknown user operation: ${operation}`);
 	}
 
 	const response = await this.helpers.requestWithAuthentication.call(this, 'goWhatsappApi', {
 		...requestOptions,
+		headers: deviceIdHeader,
 		json: true,
 	});
 	return response;

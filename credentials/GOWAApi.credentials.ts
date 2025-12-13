@@ -31,6 +31,13 @@ export class GOWAApi implements ICredentialType {
 				password: true,
 			}
 		},
+		{
+			displayName: 'Device ID',
+			name: 'deviceId',
+			type: 'string',
+			default: '',
+			description: 'Device identifier for multi-device support. If only one device is registered, it will be used as the default.',
+		},
 	];
 
 	authenticate: IAuthenticateGeneric = {

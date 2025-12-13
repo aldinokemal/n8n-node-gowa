@@ -5,6 +5,7 @@ import {
 	NodeOperationError,
 } from 'n8n-workflow';
 import { OperationExecutor, RequestOptions } from './types';
+import { getDeviceIdHeader } from './app.operations';
 
 export const groupOperations: INodeProperties[] = [
 	{
@@ -126,6 +127,12 @@ export const groupOperations: INodeProperties[] = [
 				action: 'Set group name',
 			},
 			{
+				name: 'Set Group Photo',
+				value: 'setGroupPhoto',
+				description: 'Set or remove group photo',
+				action: 'Set group photo',
+			},
+			{
 				name: 'Set Group Topic',
 				value: 'setGroupTopic',
 				description: 'Set or remove group topic/description',
@@ -187,7 +194,7 @@ export const groupProperties: INodeProperties[] = [
 		displayOptions: {
 			show: {
 				resource: ['group'],
-				operation: ['addParticipant', 'removeParticipant', 'promoteParticipant', 'demoteParticipant', 'leaveGroup', 'getGroupInfo', 'getGroupParticipants', 'getGroupInviteLink', 'exportGroupParticipants', 'getParticipantRequests', 'approveParticipantRequest', 'rejectParticipantRequest', 'setGroupName', 'setGroupLocked', 'setGroupAnnounce', 'setGroupTopic'],
+				operation: ['addParticipant', 'removeParticipant', 'promoteParticipant', 'demoteParticipant', 'leaveGroup', 'getGroupInfo', 'getGroupParticipants', 'getGroupInviteLink', 'exportGroupParticipants', 'getParticipantRequests', 'approveParticipantRequest', 'rejectParticipantRequest', 'setGroupName', 'setGroupLocked', 'setGroupAnnounce', 'setGroupTopic', 'setGroupPhoto'],
 			},
 		},
 		default: '',
@@ -292,6 +299,19 @@ export const groupProperties: INodeProperties[] = [
 		default: false,
 		description: 'Whether to reset and generate a new invite link',
 	},
+	{
+		displayName: 'Photo File Property',
+		name: 'groupPhotoFile',
+		type: 'string',
+		displayOptions: {
+			show: {
+				resource: ['group'],
+				operation: ['setGroupPhoto'],
+			},
+		},
+		default: 'data',
+		description: 'Name of the binary property containing the photo file. Leave empty to remove the group photo.',
+	},
 ];
 
 
@@ -301,9 +321,9 @@ export const executeGroupOperation: OperationExecutor = async function (
 	operation: string,
 	itemIndex: number,
 ): Promise<any> {
-	// Get credentials to retrieve base URL
 	const credentials = await this.getCredentials('goWhatsappApi');
 	const baseUrl = credentials.hostUrl as string || 'http://localhost:3000';
+	const deviceIdHeader = await getDeviceIdHeader(this);
 
 	const requestOptions: RequestOptions = {
 		method: 'POST' as IHttpRequestMethods,
@@ -425,8 +445,6 @@ export const executeGroupOperation: OperationExecutor = async function (
 			requestOptions.body.participants = rejectParticipants.split(',').map(p => p.trim());
 			break;
 
-
-
 		case 'setGroupName':
 			const nameGroupId = this.getNodeParameter('groupId', itemIndex) as string;
 			const newGroupName = this.getNodeParameter('groupName', itemIndex) as string;
@@ -459,12 +477,42 @@ export const executeGroupOperation: OperationExecutor = async function (
 			requestOptions.body.topic = topic;
 			break;
 
+		case 'setGroupPhoto':
+			const photoGroupId = this.getNodeParameter('groupId', itemIndex) as string;
+			const groupPhotoFile = this.getNodeParameter('groupPhotoFile', itemIndex, '') as string;
+			const fullUrl = `${baseUrl.replace(/\/$/, '')}/group/photo`;
+
+			const formData: any = {
+				group_id: photoGroupId,
+			};
+
+			if (groupPhotoFile) {
+				const binaryData = this.helpers.assertBinaryData(itemIndex, groupPhotoFile);
+				const fileBuffer = await this.helpers.getBinaryDataBuffer(itemIndex, groupPhotoFile);
+				formData.photo = {
+					value: fileBuffer,
+					options: {
+						filename: binaryData.fileName || 'photo.jpg',
+						contentType: binaryData.mimeType,
+					},
+				};
+			}
+
+			const photoResponse = await this.helpers.requestWithAuthentication.call(this, 'goWhatsappApi', {
+				method: 'POST' as IHttpRequestMethods,
+				url: fullUrl,
+				headers: deviceIdHeader,
+				formData,
+			});
+			return JSON.parse(photoResponse);
+
 		default:
 			throw new NodeOperationError(this.getNode(), `Unknown group operation: ${operation}`);
 	}
 
 	const response = await this.helpers.requestWithAuthentication.call(this, 'goWhatsappApi', {
 		...requestOptions,
+		headers: deviceIdHeader,
 		json: true,
 	});
 	return response;

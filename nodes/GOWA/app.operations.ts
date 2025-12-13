@@ -19,10 +19,34 @@ export const appOperations: INodeProperties[] = [
 		},
 		options: [
 			{
+				name: 'Get Connection Status',
+				value: 'getStatus',
+				description: 'Check whether the WhatsApp client is connected and logged in',
+				action: 'Get connection status',
+			},
+			{
 				name: 'Get Device Info',
 				value: 'getDeviceInfo',
 				description: 'Get device information',
 				action: 'Get device information',
+			},
+			{
+				name: 'Login',
+				value: 'login',
+				description: 'Login to WhatsApp server with QR code',
+				action: 'Login to whats app server',
+			},
+			{
+				name: 'Login with Code',
+				value: 'loginWithCode',
+				description: 'Login with pairing code',
+				action: 'Login with pairing code',
+			},
+			{
+				name: 'Logout',
+				value: 'logout',
+				description: 'Remove database and logout',
+				action: 'Logout from whats app',
 			},
 			{
 				name: 'Reconnect',
@@ -35,14 +59,41 @@ export const appOperations: INodeProperties[] = [
 	},
 ];
 
+export const appProperties: INodeProperties[] = [
+	{
+		displayName: 'Phone Number',
+		name: 'phone',
+		type: 'string',
+		required: true,
+		displayOptions: {
+			show: {
+				resource: ['app'],
+				operation: ['loginWithCode'],
+			},
+		},
+		default: '',
+		placeholder: '628912344551',
+		description: 'Your phone number for pairing',
+	},
+];
+
+export async function getDeviceIdHeader(context: IExecuteFunctions): Promise<{ [key: string]: string }> {
+	const credentials = await context.getCredentials('goWhatsappApi');
+	const deviceId = credentials.deviceId as string;
+	if (deviceId) {
+		return { 'X-Device-Id': deviceId };
+	}
+	return {};
+}
+
 export const executeAppOperation: OperationExecutor = async function (
 	this: IExecuteFunctions,
 	operation: string,
 	itemIndex: number,
 ): Promise<any> {
-	// Get credentials to retrieve base URL
 	const credentials = await this.getCredentials('goWhatsappApi');
 	const baseUrl = credentials.hostUrl as string || 'http://localhost:3000';
+	const deviceIdHeader = await getDeviceIdHeader(this);
 
 	const requestOptions: RequestOptions = {
 		method: 'GET' as IHttpRequestMethods,
@@ -58,12 +109,27 @@ export const executeAppOperation: OperationExecutor = async function (
 		case 'reconnect':
 			requestOptions.url = `${baseUrl.replace(/\/$/, '')}/app/reconnect`;
 			break;
+		case 'login':
+			requestOptions.url = `${baseUrl.replace(/\/$/, '')}/app/login`;
+			break;
+		case 'loginWithCode':
+			const phone = this.getNodeParameter('phone', itemIndex) as string;
+			requestOptions.url = `${baseUrl.replace(/\/$/, '')}/app/login-with-code`;
+			requestOptions.qs.phone = phone;
+			break;
+		case 'logout':
+			requestOptions.url = `${baseUrl.replace(/\/$/, '')}/app/logout`;
+			break;
+		case 'getStatus':
+			requestOptions.url = `${baseUrl.replace(/\/$/, '')}/app/status`;
+			break;
 		default:
 			throw new NodeOperationError(this.getNode(), `Unknown app operation: ${operation}`);
 	}
 
 	const response = await this.helpers.requestWithAuthentication.call(this, 'goWhatsappApi', {
 		...requestOptions,
+		headers: deviceIdHeader,
 		json: true,
 	});
 	return response;
