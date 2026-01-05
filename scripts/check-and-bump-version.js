@@ -25,15 +25,13 @@ try {
     }
 
     if (npmVersion === currentVersion) {
-        console.log('Versions match. Incrementing minor version...');
+        console.log('Versions match. Incrementing patch version...');
         
         // Split version into parts (major.minor.patch)
         const parts = currentVersion.split('.').map(Number);
         
-        // Increment minor version
-        parts[1] += 1;
-        // Reset patch version
-        parts[2] = 0;
+        // Increment patch version
+        parts[2] += 1;
         
         const newVersion = parts.join('.');
         console.log(`New version will be: ${newVersion}`);
