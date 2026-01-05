@@ -9,7 +9,7 @@ jobs:
     runs-on: ubuntu-latest
 
     permissions:
-      contents: read
+      contents: write
       id-token: write
 
     steps:
@@ -25,6 +25,21 @@ jobs:
 
       - name: Install dependencies
         run: npm ci
+
+      - name: Check and bump version if needed
+        id: version_check
+        run: node scripts/check-and-bump-version.js
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+      - name: Commit version bump
+        if: steps.version_check.outputs.version_bumped == 'true'
+        run: |
+          git config --global user.name 'github-actions[bot]'
+          git config --global user.email 'github-actions[bot]@users.noreply.github.com'
+          git add package.json package-lock.json
+          git commit -m "chore: auto-bump version to ${{ steps.version_check.outputs.new_version }}"
+          git push
 
       - name: Build package
         run: npm run build
