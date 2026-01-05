@@ -7,12 +7,14 @@ import {
 	NodeConnectionType,
 } from 'n8n-workflow';
 
-import { executeAppOperation, appOperations } from './app.operations';
+import { executeAppOperation, appOperations, appProperties } from './app.operations';
+import { executeDeviceOperation, deviceOperations, deviceProperties } from './device.operations';
 import { executeSendOperation, sendOperations, sendProperties } from './send.operations';
 import { executeMessageOperation, messageOperations, messageProperties } from './message.operations';
 import { executeGroupOperation, groupOperations, groupProperties } from './group.operations';
 import { executeUserOperation, userOperations, userProperties } from './user.operations';
 import { executeChatOperation, chatOperations, chatProperties } from './chat.operations';
+import { executeNewsletterOperation, newsletterOperations, newsletterProperties } from './newsletter.operations';
 
 export class Gowa implements INodeType {
 	description: INodeTypeDescription = {
@@ -59,6 +61,11 @@ export class Gowa implements INodeType {
 						description: 'Chat conversations and messaging',
 					},
 					{
+						name: 'Device',
+						value: 'device',
+						description: 'Device management for multi-device support',
+					},
+					{
 						name: 'Group',
 						value: 'group',
 						description: 'Group management operations',
@@ -67,6 +74,11 @@ export class Gowa implements INodeType {
 						name: 'Message',
 						value: 'message',
 						description: 'Message management operations',
+					},
+					{
+						name: 'Newsletter',
+						value: 'newsletter',
+						description: 'Newsletter management',
 					},
 					{
 						name: 'Send',
@@ -82,6 +94,9 @@ export class Gowa implements INodeType {
 				default: 'send',
 			},
 			...appOperations,
+			...appProperties,
+			...deviceOperations,
+			...deviceProperties,
 			...sendOperations,
 			...sendProperties,
 			...messageOperations,
@@ -92,6 +107,8 @@ export class Gowa implements INodeType {
 			...userProperties,
 			...chatOperations,
 			...chatProperties,
+			...newsletterOperations,
+			...newsletterProperties,
 		],
 	};
 
@@ -108,6 +125,8 @@ export class Gowa implements INodeType {
 
 				if (resource === 'app') {
 					responseData = await executeAppOperation.call(this, operation, i);
+				} else if (resource === 'device') {
+					responseData = await executeDeviceOperation.call(this, operation, i);
 				} else if (resource === 'send') {
 					responseData = await executeSendOperation.call(this, operation, i);
 				} else if (resource === 'message') {
@@ -118,6 +137,8 @@ export class Gowa implements INodeType {
 					responseData = await executeUserOperation.call(this, operation, i);
 				} else if (resource === 'chat') {
 					responseData = await executeChatOperation.call(this, operation, i);
+				} else if (resource === 'newsletter') {
+					responseData = await executeNewsletterOperation.call(this, operation, i);
 				} else {
 					throw new NodeOperationError(this.getNode(), `Unknown resource: ${resource}`);
 				}

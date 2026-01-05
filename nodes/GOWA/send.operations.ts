@@ -5,6 +5,7 @@ import {
 	NodeOperationError,
 } from 'n8n-workflow';
 import { OperationExecutor, RequestOptions } from './types';
+import { getDeviceIdHeader } from './app.operations';
 
 export const sendOperations: INodeProperties[] = [
 	{
@@ -528,6 +529,19 @@ export const sendProperties: INodeProperties[] = [
 		default: 0,
 		description: 'Disappearing message duration in seconds (0 = no expiry)',
 	},
+	{
+		displayName: 'Duration (Seconds)',
+		name: 'duration',
+		type: 'number',
+		displayOptions: {
+			show: {
+				resource: ['send'],
+				operation: ['sendText', 'sendContact', 'sendLink', 'sendLocation', 'sendMedia', 'sendPoll'],
+			},
+		},
+		default: 0,
+		description: 'Disappearing message duration in seconds (0 = no expiry)',
+	},
 ];
 
 async function handleFileUpload(this: IExecuteFunctions, endpoint: string, fileParam: string, apiFieldName: string, itemIndex: number): Promise<any> {
@@ -537,10 +551,10 @@ async function handleFileUpload(this: IExecuteFunctions, endpoint: string, fileP
 	const binaryData = this.helpers.assertBinaryData(itemIndex, binaryPropertyName);
 	const fileBuffer = await this.helpers.getBinaryDataBuffer(itemIndex, binaryPropertyName);
 
-	// Get credentials to retrieve base URL
 	const credentials = await this.getCredentials('goWhatsappApi');
 	const baseUrl = credentials.hostUrl as string || 'http://localhost:3000';
 	const fullUrl = `${baseUrl.replace(/\/$/, '')}${endpoint}`;
+	const deviceIdHeader = await getDeviceIdHeader(this);
 
 	const formData: any = {
 		phone: phoneNumber,
@@ -553,7 +567,6 @@ async function handleFileUpload(this: IExecuteFunctions, endpoint: string, fileP
 		},
 	};
 
-	// Add optional parameters
 	const caption = this.getNodeParameter('caption', itemIndex, '') as string;
 	if (caption) {
 		formData.caption = caption;
@@ -567,6 +580,11 @@ async function handleFileUpload(this: IExecuteFunctions, endpoint: string, fileP
 	const isForwarded = this.getNodeParameter('isForwarded', itemIndex, false) as boolean;
 	if (isForwarded) {
 		formData.is_forwarded = 'true';
+	}
+
+	const duration = this.getNodeParameter('duration', itemIndex, 0) as number;
+	if (duration > 0) {
+		formData.duration = duration.toString();
 	}
 
 	if (apiFieldName === 'image' || apiFieldName === 'video') {
@@ -584,6 +602,7 @@ async function handleFileUpload(this: IExecuteFunctions, endpoint: string, fileP
 	const response = await this.helpers.requestWithAuthentication.call(this, 'goWhatsappApi', {
 		method: 'POST' as IHttpRequestMethods,
 		url: fullUrl,
+		headers: deviceIdHeader,
 		formData,
 	});
 	return JSON.parse(response);
@@ -602,6 +621,7 @@ async function handleStickerUpload(
 	const credentials = await this.getCredentials('goWhatsappApi');
 	const baseUrl = credentials.hostUrl as string || 'http://localhost:3000';
 	const fullUrl = `${baseUrl.replace(/\/$/, '')}/send/sticker`;
+	const deviceIdHeader = await getDeviceIdHeader(this);
 
 	const formData: any = {
 		phone: phoneNumber,
@@ -627,6 +647,7 @@ async function handleStickerUpload(
 	const response = await this.helpers.requestWithAuthentication.call(this, 'goWhatsappApi', {
 		method: 'POST' as IHttpRequestMethods,
 		url: fullUrl,
+		headers: deviceIdHeader,
 		formData,
 	});
 	return JSON.parse(response);
@@ -637,9 +658,9 @@ export const executeSendOperation: OperationExecutor = async function (
 	operation: string,
 	itemIndex: number,
 ): Promise<any> {
-	// Get credentials to retrieve base URL
 	const credentials = await this.getCredentials('goWhatsappApi');
 	const baseUrl = credentials.hostUrl as string || 'http://localhost:3000';
+	const deviceIdHeader = await getDeviceIdHeader(this);
 
 	const requestOptions: RequestOptions = {
 		method: 'POST' as IHttpRequestMethods,
@@ -665,6 +686,14 @@ export const executeSendOperation: OperationExecutor = async function (
 	const isForwarded = this.getNodeParameter('isForwarded', itemIndex, false) as boolean;
 	if (isForwarded) {
 		requestOptions.body.is_forwarded = isForwarded;
+	}
+
+	// Handle duration for operations that support it
+	if (['sendText', 'sendContact', 'sendLink', 'sendLocation', 'sendPoll'].includes(operation)) {
+		const duration = this.getNodeParameter('duration', itemIndex, 0) as number;
+		if (duration > 0) {
+			requestOptions.body.duration = duration;
+		}
 	}
 
 	switch (operation) {
@@ -712,10 +741,14 @@ export const executeSendOperation: OperationExecutor = async function (
 				requestOptions.url = `${baseUrl.replace(/\/$/, '')}/send/${mediaType}`;
 				requestOptions.body[`${mediaType}_url`] = mediaUrl;
 
-				// Add optional parameters
 				const caption = this.getNodeParameter('caption', itemIndex, '') as string;
 				if (caption) {
 					requestOptions.body.caption = caption;
+				}
+
+				const duration = this.getNodeParameter('duration', itemIndex, 0) as number;
+				if (duration > 0) {
+					requestOptions.body.duration = duration;
 				}
 
 				if (mediaType === 'image' || mediaType === 'video') {
@@ -781,6 +814,7 @@ export const executeSendOperation: OperationExecutor = async function (
 
 	const response = await this.helpers.requestWithAuthentication.call(this, 'goWhatsappApi', {
 		...requestOptions,
+		headers: deviceIdHeader,
 		json: true,
 	});
 	return response;

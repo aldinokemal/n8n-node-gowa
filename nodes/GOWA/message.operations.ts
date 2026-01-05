@@ -5,6 +5,7 @@ import {
 	NodeOperationError,
 } from 'n8n-workflow';
 import { OperationExecutor, RequestOptions } from './types';
+import { getDeviceIdHeader } from './app.operations';
 
 export const messageOperations: INodeProperties[] = [
 	{
@@ -23,6 +24,12 @@ export const messageOperations: INodeProperties[] = [
 				value: 'deleteMessage',
 				description: 'Delete a message',
 				action: 'Delete a message',
+			},
+			{
+				name: 'Download Media',
+				value: 'downloadMedia',
+				description: 'Download media content from a message',
+				action: 'Download media from message',
 			},
 			{
 				name: 'React to Message',
@@ -129,9 +136,9 @@ export const executeMessageOperation: OperationExecutor = async function (
 	const messageId = this.getNodeParameter('messageId', itemIndex) as string;
 	const phoneOrGroupId = this.getNodeParameter('phoneOrGroupId', itemIndex) as string;
 
-	// Get credentials to retrieve base URL
 	const credentials = await this.getCredentials('goWhatsappApi');
 	const baseUrl = credentials.hostUrl as string || 'http://localhost:3000';
+	const deviceIdHeader = await getDeviceIdHeader(this);
 
 	const requestOptions: RequestOptions = {
 		method: 'POST' as IHttpRequestMethods,
@@ -144,6 +151,12 @@ export const executeMessageOperation: OperationExecutor = async function (
 	switch (operation) {
 		case 'deleteMessage':
 			requestOptions.url = `${baseUrl.replace(/\/$/, '')}/message/${messageId}/delete`;
+			break;
+		case 'downloadMedia':
+			requestOptions.method = 'GET';
+			requestOptions.url = `${baseUrl.replace(/\/$/, '')}/message/${messageId}/download`;
+			requestOptions.qs = { phone: phoneOrGroupId };
+			delete requestOptions.body;
 			break;
 		case 'reactMessage':
 			const emoji = this.getNodeParameter('emoji', itemIndex) as string;
@@ -173,6 +186,7 @@ export const executeMessageOperation: OperationExecutor = async function (
 
 	const response = await this.helpers.requestWithAuthentication.call(this, 'goWhatsappApi', {
 		...requestOptions,
+		headers: deviceIdHeader,
 		json: true,
 	});
 	return response;

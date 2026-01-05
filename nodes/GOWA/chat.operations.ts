@@ -5,6 +5,7 @@ import {
 	NodeOperationError,
 } from 'n8n-workflow';
 import { OperationExecutor, RequestOptions } from './types';
+import { getDeviceIdHeader } from './app.operations';
 
 export const chatOperations: INodeProperties[] = [
 	{
@@ -19,16 +20,22 @@ export const chatOperations: INodeProperties[] = [
 		},
 		options: [
 			{
-				name: 'List Chats',
-				value: 'listChats',
-				description: 'Get list of chats',
-				action: 'Get list of chats',
-			},
-			{
 				name: 'Get Chat Messages',
 				value: 'getChatMessages',
 				description: 'Get messages from a specific chat',
 				action: 'Get messages from a specific chat',
+			},
+			{
+				name: 'Label Chat',
+				value: 'labelChat',
+				description: 'Apply or remove a label from a chat conversation',
+				action: 'Label or unlabel a chat',
+			},
+			{
+				name: 'List Chats',
+				value: 'listChats',
+				description: 'Get list of chats',
+				action: 'Get list of chats',
 			},
 			{
 				name: 'Pin Chat',
@@ -114,7 +121,7 @@ export const chatProperties: INodeProperties[] = [
 		displayOptions: {
 			show: {
 				resource: ['chat'],
-				operation: ['getChatMessages', 'pinChat', 'setDisappearingTimer'],
+				operation: ['getChatMessages', 'pinChat', 'setDisappearingTimer', 'labelChat'],
 			},
 		},
 		default: '',
@@ -251,6 +258,50 @@ export const chatProperties: INodeProperties[] = [
 		default: 86400,
 		description: 'Timer duration for disappearing messages',
 	},
+
+	// Properties for Label Chat
+	{
+		displayName: 'Label ID',
+		name: 'labelId',
+		type: 'string',
+		required: true,
+		displayOptions: {
+			show: {
+				resource: ['chat'],
+				operation: ['labelChat'],
+			},
+		},
+		default: '',
+		description: 'Unique identifier for the label',
+	},
+	{
+		displayName: 'Label Name',
+		name: 'labelName',
+		type: 'string',
+		required: true,
+		displayOptions: {
+			show: {
+				resource: ['chat'],
+				operation: ['labelChat'],
+			},
+		},
+		default: '',
+		description: 'Display name for the label',
+	},
+	{
+		displayName: 'Labeled',
+		name: 'labeled',
+		type: 'boolean',
+		required: true,
+		displayOptions: {
+			show: {
+				resource: ['chat'],
+				operation: ['labelChat'],
+			},
+		},
+		default: true,
+		description: 'Whether to apply (true) or remove (false) the label',
+	},
 ];
 
 export const executeChatOperation: OperationExecutor = async function (
@@ -260,6 +311,7 @@ export const executeChatOperation: OperationExecutor = async function (
 ): Promise<any> {
 	const credentials = await this.getCredentials('goWhatsappApi');
 	const baseUrl = credentials.hostUrl as string || 'http://localhost:3000';
+	const deviceIdHeader = await getDeviceIdHeader(this);
 
 	const requestOptions: RequestOptions = {
 		method: 'GET' as IHttpRequestMethods,
@@ -290,7 +342,6 @@ export const executeChatOperation: OperationExecutor = async function (
 				media_only: this.getNodeParameter('mediaOnly', itemIndex),
 				search: this.getNodeParameter('search', itemIndex),
 			};
-			// Only add is_from_me if it's explicitly set (not empty string)
 			if (isFromMeValue !== '') {
 				requestOptions.qs.is_from_me = isFromMeValue;
 			}
@@ -311,12 +362,23 @@ export const executeChatOperation: OperationExecutor = async function (
 				timer_seconds: this.getNodeParameter('timerSeconds', itemIndex),
 			};
 			break;
+		case 'labelChat':
+			const chatJidForLabel = this.getNodeParameter('chatJid', itemIndex) as string;
+			requestOptions.method = 'POST';
+			requestOptions.url = `${baseUrl.replace(/\/$/, '')}/chat/${chatJidForLabel}/label`;
+			requestOptions.body = {
+				label_id: this.getNodeParameter('labelId', itemIndex),
+				label_name: this.getNodeParameter('labelName', itemIndex),
+				labeled: this.getNodeParameter('labeled', itemIndex),
+			};
+			break;
 		default:
 			throw new NodeOperationError(this.getNode(), `Unknown chat operation: ${operation}`);
 	}
 
 	const response = await this.helpers.requestWithAuthentication.call(this, 'goWhatsappApi', {
 		...requestOptions,
+		headers: deviceIdHeader,
 		json: true,
 	});
 	return response;

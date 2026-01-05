@@ -8,6 +8,8 @@ This is an n8n community node for [GOWA (Go WhatsApp Web MultiDevice)](https://g
 
 GOWA provides a comprehensive WhatsApp Web API implementation written in Go, supporting multi-device functionality and extensive WhatsApp features.
 
+**This version (3.0.0) is compatible with GOWA API v8.**
+
 [n8n](https://n8n.io/) is a [fair-code licensed](https://docs.n8n.io/reference/license/) workflow automation platform.
 
 [Installation](#installation)  
@@ -37,12 +39,28 @@ This node supports the following operations:
 
 ### App Management
 
+- **Get Connection Status** - Check whether the WhatsApp client is connected and logged in
 - **Get Device Info** - Get device information
+- **Login** - Login to WhatsApp server with QR code
+- **Login with Code** - Login with pairing code
+- **Logout** - Remove database and logout
 - **Reconnect** - Reconnect to WhatsApp Web
+
+### Device Management (v8)
+
+- **List Devices** - List all registered devices with connection status
+- **Add Device** - Create a new device slot for multi-device management
+- **Get Device** - Get detailed information about a specific device
+- **Remove Device** - Remove a device from the server
+- **Login Device** - Initiate QR code login for a specific device
+- **Login Device with Code** - Initiate pairing code login for a specific device
+- **Logout Device** - Logout a specific device from WhatsApp
+- **Reconnect Device** - Reconnect a specific device to WhatsApp
+- **Get Device Status** - Get connection status of a specific device
 
 ### Send Messages
 
-- **Send Text** - Send text messages
+- **Send Text** - Send text messages (with optional disappearing message duration)
 - **Send Link** - Send links with optional caption
 - **Send Media** - Send media files (image, audio, video, or any file) with optional caption
 - **Send Sticker** - Send sticker with automatic conversion to WebP format
@@ -55,6 +73,7 @@ This node supports the following operations:
 ### Message Management
 
 - **Delete Message** - Delete a message
+- **Download Media** - Download media content from a message
 - **Revoke Message** - Revoke a message for everyone
 - **React to Message** - Add emoji reactions to messages
 - **Update Message** - Update message content
@@ -75,6 +94,7 @@ This node supports the following operations:
 - **Approve Participant Request** - Approve participant request to join group
 - **Reject Participant Request** - Reject participant request to join group
 - **Set Group Name** - Set group name
+- **Set Group Photo** - Set or remove group photo
 - **Set Group Topic** - Set or remove group topic/description
 - **Set Group Locked Status** - Lock/unlock group so only admins can modify group info
 - **Set Group Announce Mode** - Enable/disable announce mode so only admins can send messages
@@ -88,17 +108,26 @@ This node supports the following operations:
 
 - **List Chats** - Get a list of all chat conversations
 - **Get Chat Messages** - Retrieve messages from a specific chat
+- **Label Chat** - Apply or remove a label from a chat conversation
 - **Pin Chat** - Pin or unpin a chat in the conversation list
 - **Set Disappearing Timer** - Set or disable disappearing messages for a chat
 
 ### User Operations
 
+- **Change Push Name** - Update the display name shown to others in WhatsApp
 - **Get User Info** - Get user profile information
 - **Get Avatar** - Get user avatar image
 - **Set Avatar** - Set user avatar image
 - **Get Business Profile** - Get business profile information
 - **Get Privacy Settings** - Get privacy settings
+- **Get My Groups** - Get list of groups the user is in
+- **Get My Newsletters** - Get list of newsletters the user follows
+- **Get My Contacts** - Get list of user contacts
 - **Check Contact** - Check if contact is on WhatsApp
+
+### Newsletter Management
+
+- **Unfollow Newsletter** - Unfollow a newsletter
 
 ## Credentials
 
@@ -107,6 +136,7 @@ This node requires GOWA API credentials:
 1. **Host URL** - URL of your GOWA API server (default: <http://localhost:3000>)
 2. **Username** - Basic auth username
 3. **Password** - Basic auth password
+4. **Device ID** - (Optional) Device identifier for multi-device support. Required when multiple devices are registered.
 
 The credentials use HTTP Basic Authentication to connect to your GOWA API instance.
 
@@ -137,6 +167,14 @@ The credentials use HTTP Basic Authentication to connect to your GOWA API instan
 7. For URLs: enter the media URL
 8. Optionally add a caption
 9. Execute the node
+
+### Example: Multi-Device Management
+
+1. Select **Device** as the resource
+2. Select **Add Device** to create a new device slot
+3. Use **Login Device** or **Login Device with Code** to authenticate
+4. Use **Get Device Status** to check connection status
+5. Configure the Device ID in credentials for device-scoped operations
 
 ### Example: Get Business Profile
 
