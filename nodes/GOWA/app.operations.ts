@@ -98,7 +98,12 @@ export const appProperties: INodeProperties[] = [
 	},
 ];
 
-export async function getDeviceIdHeader(context: IExecuteFunctions): Promise<{ [key: string]: string }> {
+export async function getDeviceIdHeader(context: IExecuteFunctions, itemIndex: number): Promise<{ [key: string]: string }> {
+	const nodeDeviceId = context.getNodeParameter('deviceId', itemIndex, '') as string;
+	if (nodeDeviceId) {
+		return { 'X-Device-Id': nodeDeviceId };
+	}
+
 	const credentials = await context.getCredentials('goWhatsappApi');
 	const deviceId = credentials.deviceId as string;
 	if (deviceId) {
@@ -114,7 +119,7 @@ export const executeAppOperation: OperationExecutor = async function (
 ): Promise<any> {
 	const credentials = await this.getCredentials('goWhatsappApi');
 	const baseUrl = credentials.hostUrl as string || 'http://localhost:3000';
-	const deviceIdHeader = await getDeviceIdHeader(this);
+	const deviceIdHeader = await getDeviceIdHeader(this, itemIndex);
 
 	const requestOptions: RequestOptions = {
 		method: 'GET' as IHttpRequestMethods,

@@ -136,7 +136,7 @@ This node requires GOWA API credentials:
 1. **Host URL** - URL of your GOWA API server (default: <http://localhost:3000>)
 2. **Username** - Basic auth username
 3. **Password** - Basic auth password
-4. **Device ID** - (Optional) Device identifier for multi-device support. Required when multiple devices are registered.
+4. **Device ID** - (Optional) Default device identifier for multi-device support. Used when the node-level Device ID parameter is empty.
 
 The credentials use HTTP Basic Authentication to connect to your GOWA API instance.
 
@@ -174,7 +174,7 @@ The credentials use HTTP Basic Authentication to connect to your GOWA API instan
 2. Select **Add Device** to create a new device slot
 3. Use **Login Device** or **Login Device with Code** to authenticate
 4. Use **Get Device Status** to check connection status
-5. Configure the Device ID in credentials for device-scoped operations
+5. For app/chat/group/message/newsletter/send/user operations, you can set **Device ID** directly in the node to override credential Device ID dynamically per item
 
 ### Example: Get Business Profile
 
