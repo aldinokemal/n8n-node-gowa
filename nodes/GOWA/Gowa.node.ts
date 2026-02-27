@@ -95,7 +95,7 @@ export class Gowa implements INodeType {
 			},
 			{
 				displayName: 'Device ID',
-				name: 'deviceId',
+				name: 'deviceIdOverride',
 				type: 'string',
 				displayOptions: {
 					show: {

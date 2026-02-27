@@ -99,7 +99,7 @@ export const appProperties: INodeProperties[] = [
 ];
 
 export async function getDeviceIdHeader(context: IExecuteFunctions, itemIndex: number): Promise<{ [key: string]: string }> {
-	const nodeDeviceId = context.getNodeParameter('deviceId', itemIndex, '') as string;
+	const nodeDeviceId = context.getNodeParameter('deviceIdOverride', itemIndex, '') as string;
 	if (nodeDeviceId) {
 		return { 'X-Device-Id': nodeDeviceId };
 	}
