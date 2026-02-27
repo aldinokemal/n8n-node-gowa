@@ -138,7 +138,7 @@ export const executeMessageOperation: OperationExecutor = async function (
 
 	const credentials = await this.getCredentials('goWhatsappApi');
 	const baseUrl = credentials.hostUrl as string || 'http://localhost:3000';
-	const deviceIdHeader = await getDeviceIdHeader(this);
+	const deviceIdHeader = await getDeviceIdHeader(this, itemIndex);
 
 	const requestOptions: RequestOptions = {
 		method: 'POST' as IHttpRequestMethods,
