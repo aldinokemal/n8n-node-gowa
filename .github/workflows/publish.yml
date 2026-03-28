@@ -28,8 +28,6 @@ jobs:
       - name: Check and bump version if needed
         id: version_check
         run: node scripts/check-and-bump-version.js
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
       - name: Commit version bump
         if: steps.version_check.outputs.version_bumped == 'true'
@@ -55,9 +53,5 @@ jobs:
           echo "name=$NAME" >> $GITHUB_OUTPUT
           echo "📦 Publishing $NAME@$VERSION"
 
-      - name: Publish to NPM with both tags
-        run: |
-          npm publish --provenance --access public
-          npm dist-tag add ${{ steps.package.outputs.name }}@${{ steps.package.outputs.version }} latest
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+      - name: Publish to NPM
+        run: npm publish --provenance --access public
