@@ -93,6 +93,18 @@ export class Gowa implements INodeType {
 				],
 				default: 'send',
 			},
+			{
+				displayName: 'Device ID',
+				name: 'deviceIdOverride',
+				type: 'string',
+				displayOptions: {
+					show: {
+						resource: ['app', 'chat', 'group', 'message', 'newsletter', 'send', 'user'],
+					},
+				},
+				default: '',
+				description: 'Optional device ID override. If set, it takes priority over the credential device ID.',
+			},
 			...appOperations,
 			...appProperties,
 			...deviceOperations,
@@ -167,4 +179,3 @@ export class Gowa implements INodeType {
 	}
 
 }
-
