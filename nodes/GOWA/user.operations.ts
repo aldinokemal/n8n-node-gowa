@@ -134,7 +134,7 @@ export const executeUserOperation: OperationExecutor = async function (
 ): Promise<any> {
 	const credentials = await this.getCredentials('goWhatsappApi');
 	const baseUrl = credentials.hostUrl as string || 'http://localhost:3000';
-	const deviceIdHeader = await getDeviceIdHeader(this, itemIndex);
+	const deviceIdHeader = getDeviceIdHeader(this, itemIndex, credentials);
 
 	const requestOptions: RequestOptions = {
 		method: 'GET' as IHttpRequestMethods,

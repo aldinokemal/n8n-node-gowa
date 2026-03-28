@@ -554,7 +554,7 @@ async function handleFileUpload(this: IExecuteFunctions, endpoint: string, fileP
 	const credentials = await this.getCredentials('goWhatsappApi');
 	const baseUrl = credentials.hostUrl as string || 'http://localhost:3000';
 	const fullUrl = `${baseUrl.replace(/\/$/, '')}${endpoint}`;
-	const deviceIdHeader = await getDeviceIdHeader(this, itemIndex);
+	const deviceIdHeader = getDeviceIdHeader(this, itemIndex, credentials);
 
 	const formData: any = {
 		phone: phoneNumber,
@@ -621,7 +621,7 @@ async function handleStickerUpload(
 	const credentials = await this.getCredentials('goWhatsappApi');
 	const baseUrl = credentials.hostUrl as string || 'http://localhost:3000';
 	const fullUrl = `${baseUrl.replace(/\/$/, '')}/send/sticker`;
-	const deviceIdHeader = await getDeviceIdHeader(this, itemIndex);
+	const deviceIdHeader = getDeviceIdHeader(this, itemIndex, credentials);
 
 	const formData: any = {
 		phone: phoneNumber,
@@ -660,7 +660,7 @@ export const executeSendOperation: OperationExecutor = async function (
 ): Promise<any> {
 	const credentials = await this.getCredentials('goWhatsappApi');
 	const baseUrl = credentials.hostUrl as string || 'http://localhost:3000';
-	const deviceIdHeader = await getDeviceIdHeader(this, itemIndex);
+	const deviceIdHeader = getDeviceIdHeader(this, itemIndex, credentials);
 
 	const requestOptions: RequestOptions = {
 		method: 'POST' as IHttpRequestMethods,
