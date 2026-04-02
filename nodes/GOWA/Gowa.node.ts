@@ -4,7 +4,7 @@ import {
 	INodeType,
 	INodeTypeDescription,
 	NodeOperationError,
-	NodeConnectionType,
+	NodeConnectionTypes,
 } from 'n8n-workflow';
 
 import { executeAppOperation, appOperations, appProperties } from './app.operations';
@@ -21,15 +21,15 @@ export class Gowa implements INodeType {
 		name: 'gowa',
 		displayName: 'GOWA',
 		icon: 'file:gowa-icon.svg',
-		group: ['messaging'],
+		group: ['output'],
 		version: 1,
 		subtitle: '={{$parameter["resource"] + ": " + $parameter["operation"]}}',
 		description: 'Interact with Go WhatsApp Web MultiDevice API',
 		defaults: {
 			name: 'GOWA',
 		},
-		inputs: [NodeConnectionType.Main],
-		outputs: [NodeConnectionType.Main],
+		inputs: [NodeConnectionTypes.Main],
+		outputs: [NodeConnectionTypes.Main],
 		credentials: [
 			{
 				name: 'goWhatsappApi',

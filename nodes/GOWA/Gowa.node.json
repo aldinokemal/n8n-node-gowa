@@ -1,0 +1,27 @@
+{
+	"node": "n8n-nodes-base.gowa",
+	"nodeVersion": "1.0",
+	"codexVersion": "1.0",
+	"categories": ["Communication"],
+	"resources": {
+		"primaryDocumentation": [
+			{
+				"url": "https://github.com/aldinokemal/go-whatsapp-web-multidevice"
+			}
+		]
+	},
+	"alias": [
+		"WhatsApp",
+		"WA",
+		"GOWA",
+		"Go WhatsApp",
+		"messaging",
+		"chat",
+		"send message",
+		"group",
+		"newsletter"
+	],
+	"subcategories": {
+		"Communication": ["Messaging"]
+	}
+}
