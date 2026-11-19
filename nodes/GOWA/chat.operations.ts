@@ -20,6 +20,12 @@ export const chatOperations: INodeProperties[] = [
 		},
 		options: [
 			{
+				name: 'Archive Chat',
+				value: 'archiveChat',
+				description: 'Archive or unarchive a chat',
+				action: 'Archive or unarchive a chat',
+			},
+			{
 				name: 'Get Chat Messages',
 				value: 'getChatMessages',
 				description: 'Get messages from a specific chat',
@@ -42,6 +48,12 @@ export const chatOperations: INodeProperties[] = [
 				value: 'pinChat',
 				description: 'Pin or unpin a chat',
 				action: 'Pin or unpin a chat',
+			},
+			{
+				name: 'Request Chat History',
+				value: 'requestChatHistory',
+				description: 'Ask the paired phone to sync older messages asynchronously',
+				action: 'Request older chat history',
 			},
 			{
 				name: 'Set Disappearing Timer',
@@ -121,7 +133,7 @@ export const chatProperties: INodeProperties[] = [
 		displayOptions: {
 			show: {
 				resource: ['chat'],
-				operation: ['getChatMessages', 'pinChat', 'setDisappearingTimer', 'labelChat'],
+				operation: ['getChatMessages', 'pinChat', 'setDisappearingTimer', 'labelChat', 'archiveChat', 'requestChatHistory'],
 			},
 		},
 		default: '',
@@ -302,6 +314,51 @@ export const chatProperties: INodeProperties[] = [
 		default: true,
 		description: 'Whether to apply (true) or remove (false) the label',
 	},
+	{
+		displayName: 'Archived',
+		name: 'archiveChatState',
+		type: 'boolean',
+		displayOptions: {
+			show: {
+				resource: ['chat'],
+				operation: ['archiveChat'],
+			},
+		},
+		default: true,
+		description: 'Whether to archive the chat',
+	},
+	{
+		displayName: 'Message Count',
+		name: 'historyCount',
+		type: 'number',
+		typeOptions: { minValue: 1, maxValue: 500, numberPrecision: 0 },
+		displayOptions: {
+			show: {
+				resource: ['chat'],
+				operation: ['requestChatHistory'],
+			},
+		},
+		default: 50,
+		description: 'Number of older messages to request from the phone',
+	},
+	{
+		displayName: 'Archive Status',
+		name: 'archiveFilter',
+		type: 'options',
+		options: [
+			{ name: 'All Chats', value: '' },
+			{ name: 'Archived', value: 'true' },
+			{ name: 'Unarchived', value: 'false' },
+		],
+		displayOptions: {
+			show: {
+				resource: ['chat'],
+				operation: ['listChats'],
+			},
+		},
+		default: '',
+		description: 'Filter chats by whether they are archived',
+	},
 ];
 
 export const executeChatOperation: OperationExecutor = async function (
@@ -321,7 +378,7 @@ export const executeChatOperation: OperationExecutor = async function (
 	};
 
 	switch (operation) {
-		case 'listChats':
+		case 'listChats': {
 			requestOptions.url = `${baseUrl.replace(/\/$/, '')}/chats`;
 			requestOptions.qs = {
 				limit: this.getNodeParameter('limit', itemIndex),
@@ -329,7 +386,12 @@ export const executeChatOperation: OperationExecutor = async function (
 				search: this.getNodeParameter('search', itemIndex),
 				has_media: this.getNodeParameter('hasMedia', itemIndex),
 			};
+			const archiveFilter = this.getNodeParameter('archiveFilter', itemIndex, '');
+			if (archiveFilter !== '') {
+				requestOptions.qs.archived = archiveFilter;
+			}
 			break;
+		}
 		case 'getChatMessages':
 			const chatJidForMessages = this.getNodeParameter('chatJid', itemIndex) as string;
 			requestOptions.url = `${baseUrl.replace(/\/$/, '')}/chat/${chatJidForMessages}/messages`;
@@ -372,6 +434,20 @@ export const executeChatOperation: OperationExecutor = async function (
 				labeled: this.getNodeParameter('labeled', itemIndex),
 			};
 			break;
+		case 'archiveChat':
+		case 'requestChatHistory': {
+			const chatJid = encodeURIComponent(String(this.getNodeParameter('chatJid', itemIndex)));
+			const chatUrl = `${baseUrl.replace(/\/$/, '')}/chat/${chatJid}`;
+			requestOptions.method = 'POST';
+			if (operation === 'archiveChat') {
+				requestOptions.url = `${chatUrl}/archive`;
+				requestOptions.body = { archived: this.getNodeParameter('archiveChatState', itemIndex) };
+			} else {
+				requestOptions.url = `${chatUrl}/history`;
+				requestOptions.body = { count: this.getNodeParameter('historyCount', itemIndex) };
+			}
+			break;
+		}
 		default:
 			throw new NodeOperationError(this.getNode(), `Unknown chat operation: ${operation}`);
 	}

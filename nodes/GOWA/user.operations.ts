@@ -50,6 +50,12 @@ export const userOperations: INodeProperties[] = [
 				action: 'Get my contacts',
 			},
 			{
+				name: 'Get My Detailed Contacts',
+				value: 'getMyDetailedContacts',
+				description: 'List contacts with separate full, first, push, and business names',
+				action: 'Get my detailed contacts',
+			},
+			{
 				name: 'Get My Groups',
 				value: 'getMyGroups',
 				description: 'Get list of groups the user is in',
@@ -77,6 +83,12 @@ export const userOperations: INodeProperties[] = [
 				value: 'setAvatar',
 				description: 'Set user avatar',
 				action: 'Set user avatar',
+			},
+			{
+				name: 'Subscribe to Presence',
+				value: 'subscribePresence',
+				description: 'Receive contact presence updates through GOWA webhooks',
+				action: 'Subscribe to contact presence',
 			},
 		],
 		default: 'getUserInfo',
@@ -124,6 +136,20 @@ export const userProperties: INodeProperties[] = [
 		},
 		default: '',
 		description: 'The new display name to set',
+	},
+	{
+		displayName: 'Contact Phone or JID',
+		name: 'presencePhone',
+		type: 'string',
+		required: true,
+		displayOptions: {
+			show: {
+				resource: ['user'],
+				operation: ['subscribePresence'],
+			},
+		},
+		default: '',
+		description: 'Contact to subscribe to for online and offline updates',
 	},
 ];
 
@@ -213,6 +239,16 @@ export const executeUserOperation: OperationExecutor = async function (
 
 		case 'getMyContacts':
 			requestOptions.url = `${baseUrl.replace(/\/$/, '')}/user/my/contacts`;
+			break;
+
+		case 'getMyDetailedContacts':
+			requestOptions.url = `${baseUrl.replace(/\/$/, '')}/user/my/contacts/detailed`;
+			break;
+
+		case 'subscribePresence':
+			requestOptions.method = 'POST';
+			requestOptions.url = `${baseUrl.replace(/\/$/, '')}/user/presence/subscribe`;
+			requestOptions.body = { phone: this.getNodeParameter('presencePhone', itemIndex) };
 			break;
 
 		default:

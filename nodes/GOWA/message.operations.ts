@@ -32,6 +32,18 @@ export const messageOperations: INodeProperties[] = [
 				action: 'Download media from message',
 			},
 			{
+				name: 'Forward Message',
+				value: 'forwardMessage',
+				description: 'Forward a message from local chat storage to another chat',
+				action: 'Forward a stored message',
+			},
+			{
+				name: 'Mark as Played',
+				value: 'markAsPlayed',
+				description: 'Send a played receipt for an incoming audio message or voice note',
+				action: 'Mark an audio message as played',
+			},
+			{
 				name: 'React to Message',
 				value: 'reactMessage',
 				description: 'React to a message',
@@ -84,7 +96,7 @@ export const messageProperties: INodeProperties[] = [
 			},
 		},
 		default: '',
-		description: 'Phone number (for private chat) or Group ID (for group chat)',
+		description: 'Phone number or group ID. For Forward Message, enter the destination chat.',
 	},
 	{
 		displayName: 'Message ID',
@@ -126,6 +138,52 @@ export const messageProperties: INodeProperties[] = [
 		default: '',
 		description: 'The new content of the message',
 	},
+	{
+		displayName: 'Force Reupload',
+		name: 'forceReupload',
+		type: 'boolean',
+		displayOptions: {
+			show: {
+				resource: ['message'],
+				operation: ['forwardMessage'],
+			},
+		},
+		default: false,
+		description: 'Whether to reupload media instead of reusing the original reference',
+	},
+	{
+		displayName: 'Content Type',
+		name: 'editMediaType',
+		type: 'options',
+		options: [
+			{ name: 'Document Caption', value: 'document' },
+			{ name: 'Image Caption', value: 'image' },
+			{ name: 'Text', value: '' },
+		],
+		displayOptions: {
+			show: {
+				resource: ['message'],
+				operation: ['updateMessage'],
+			},
+		},
+		default: '',
+		description: 'Select the original message type to edit text or a media caption',
+	},
+	{
+		displayName: 'Link Preview URL',
+		name: 'editLink',
+		type: 'string',
+		placeholder: 'https://example.com',
+		displayOptions: {
+			show: {
+				resource: ['message'],
+				operation: ['updateMessage'],
+				editMediaType: [''],
+			},
+		},
+		default: '',
+		description: 'Optional URL to include as a link preview when editing text',
+	},
 ];
 
 export const executeMessageOperation: OperationExecutor = async function (
@@ -163,6 +221,13 @@ export const executeMessageOperation: OperationExecutor = async function (
 			requestOptions.url = `${baseUrl.replace(/\/$/, '')}/message/${messageId}/reaction`;
 			requestOptions.body.emoji = emoji;
 			break;
+		case 'forwardMessage':
+			requestOptions.url = `${baseUrl.replace(/\/$/, '')}/message/${messageId}/forward`;
+			requestOptions.body.force_reupload = this.getNodeParameter('forceReupload', itemIndex);
+			break;
+		case 'markAsPlayed':
+			requestOptions.url = `${baseUrl.replace(/\/$/, '')}/message/${messageId}/played`;
+			break;
 		case 'readMessage':
 			requestOptions.url = `${baseUrl.replace(/\/$/, '')}/message/${messageId}/read`;
 			break;
@@ -175,11 +240,21 @@ export const executeMessageOperation: OperationExecutor = async function (
 		case 'unstarMessage':
 			requestOptions.url = `${baseUrl.replace(/\/$/, '')}/message/${messageId}/unstar`;
 			break;
-		case 'updateMessage':
+		case 'updateMessage': {
 			const newMessage = this.getNodeParameter('newMessage', itemIndex) as string;
 			requestOptions.url = `${baseUrl.replace(/\/$/, '')}/message/${messageId}/update`;
 			requestOptions.body.message = newMessage;
+			const mediaType = this.getNodeParameter('editMediaType', itemIndex, '');
+			if (mediaType) {
+				requestOptions.body.media_type = mediaType;
+			} else {
+				const link = this.getNodeParameter('editLink', itemIndex, '');
+				if (link) {
+					requestOptions.body.link = link;
+				}
+			}
 			break;
+		}
 		default:
 			throw new NodeOperationError(this.getNode(), `Unknown message operation: ${operation}`);
 	}

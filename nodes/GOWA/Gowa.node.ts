@@ -8,6 +8,7 @@ import {
 } from 'n8n-workflow';
 
 import { executeAppOperation, appOperations, appProperties } from './app.operations';
+import { executeCallOperation, callProperties } from './call.operations';
 import { executeDeviceOperation, deviceOperations, deviceProperties } from './device.operations';
 import { executeSendOperation, sendOperations, sendProperties } from './send.operations';
 import { executeMessageOperation, messageOperations, messageProperties } from './message.operations';
@@ -56,6 +57,11 @@ export class Gowa implements INodeType {
 						description: 'App connection and device management',
 					},
 					{
+						name: 'Call',
+						value: 'call',
+						description: 'Incoming call operations',
+					},
+					{
 						name: 'Chat',
 						value: 'chat',
 						description: 'Chat conversations and messaging',
@@ -99,7 +105,7 @@ export class Gowa implements INodeType {
 				type: 'string',
 				displayOptions: {
 					show: {
-						resource: ['app', 'chat', 'group', 'message', 'newsletter', 'send', 'user'],
+						resource: ['app', 'call', 'chat', 'group', 'message', 'newsletter', 'send', 'user'],
 					},
 				},
 				default: '',
@@ -107,6 +113,7 @@ export class Gowa implements INodeType {
 			},
 			...appOperations,
 			...appProperties,
+			...callProperties,
 			...deviceOperations,
 			...deviceProperties,
 			...sendOperations,
@@ -137,6 +144,8 @@ export class Gowa implements INodeType {
 
 				if (resource === 'app') {
 					responseData = await executeAppOperation.call(this, operation, i);
+				} else if (resource === 'call') {
+					responseData = await executeCallOperation.call(this, operation, i);
 				} else if (resource === 'device') {
 					responseData = await executeDeviceOperation.call(this, operation, i);
 				} else if (resource === 'send') {
