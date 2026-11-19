@@ -5,6 +5,7 @@ import {
 	NodeOperationError,
 } from 'n8n-workflow';
 import { OperationExecutor, RequestOptions } from './types';
+import { operationOptions, operationProperties } from './properties';
 import { getDeviceIdHeader } from './app.operations';
 
 export const sendOperations: INodeProperties[] = [
@@ -18,82 +19,72 @@ export const sendOperations: INodeProperties[] = [
 				resource: ['send'],
 			},
 		},
-		options: [
-			{
-				name: 'Send Chat Presence',
-				value: 'sendChatPresence',
-				description: 'Send typing indicator to start or stop showing that you are composing a message',
-				action: 'Send chat presence typing indicator',
-			},
-			{
-				name: 'Send Contact',
-				value: 'sendContact',
-				description: 'Send a contact',
-				action: 'Send a contact',
-			},
-			{
-				name: 'Send Link',
-				value: 'sendLink',
-				description: 'Send a link',
-				action: 'Send a link',
-			},
-			{
-				name: 'Send Location',
-				value: 'sendLocation',
-				description: 'Send a location',
-				action: 'Send a location',
-			},
-			{
-				name: 'Send Media',
-				value: 'sendMedia',
-				description: 'Send media files (image, audio, video, or any file)',
-				action: 'Send media files',
-			},
-			{
-				name: 'Send Poll',
-				value: 'sendPoll',
-				description: 'Send a poll with multiple options',
-				action: 'Send a poll',
-			},
-			{
-				name: 'Send Presence',
-				value: 'sendPresence',
-				description: 'Send presence status',
-				action: 'Send presence status',
-			},
-			{
-				name: 'Send Sticker',
-				value: 'sendSticker',
-				description: 'Send sticker with automatic conversion to WebP format',
-				action: 'Send a sticker',
-			},
-			{
-				name: 'Send Text',
-				value: 'sendText',
-				description: 'Send a text message',
-				action: 'Send a text message',
-			},
-		],
+		options: operationOptions({
+			cancelScheduledSend: [
+				'Cancel Scheduled Send',
+				'Cancel a scheduled send',
+				'Cancel a scheduled message',
+			],
+			getScheduledSend: ['Get Scheduled Send', 'Get a scheduled send', 'Get details of a scheduled message'],
+			listScheduledSends: [
+				'List Scheduled Sends',
+				'List scheduled sends',
+				'List scheduled messages for the selected device',
+			],
+			pauseScheduledSend: ['Pause Scheduled Send', 'Pause a scheduled send', 'Pause a scheduled message'],
+			resumeScheduledSend: [
+				'Resume Scheduled Send',
+				'Resume a scheduled send',
+				'Resume a paused scheduled message',
+			],
+			sendChatPresence: [
+				'Send Chat Presence',
+				'Send chat presence typing indicator',
+				'Send typing indicator to start or stop showing that you are composing a message',
+			],
+			sendContact: ['Send Contact', 'Send a contact'],
+			sendInteractive: [
+				'Send Interactive Message',
+				'Send an interactive message',
+				'Send experimental WhatsApp buttons, lists, or carousel cards',
+			],
+			sendLink: ['Send Link', 'Send a link'],
+			sendLocation: ['Send Location', 'Send a location'],
+			sendMedia: ['Send Media', 'Send media files', 'Send media files (image, audio, video, or any file)'],
+			sendPoll: ['Send Poll', 'Send a poll', 'Send a poll with multiple options'],
+			sendPresence: ['Send Presence', 'Send presence status'],
+			sendSticker: [
+				'Send Sticker',
+				'Send a sticker',
+				'Send sticker with automatic conversion to WebP format',
+			],
+			sendText: ['Send Text', 'Send a text message'],
+		}),
 		default: 'sendText',
 	},
 ];
 
 export const sendProperties: INodeProperties[] = [
-	{
-		displayName: 'Phone or Group ID',
-		name: 'phoneNumber',
-		type: 'string',
-		required: true,
-		displayOptions: {
-			show: {
-				resource: ['send'],
-				operation: ['sendText', 'sendContact', 'sendLink', 'sendLocation', 'sendChatPresence', 'sendPoll', 'sendMedia', 'sendSticker'],
-			},
+	...operationProperties('send', [
+		'sendText',
+		'sendContact',
+		'sendLink',
+		'sendLocation',
+		'sendChatPresence',
+		'sendPoll',
+		'sendMedia',
+		'sendSticker',
+		'sendInteractive',
+	], {
+		phoneNumber: {
+			displayName: 'Phone or Group ID',
+			type: 'string',
+			required: true,
+			default: '',
+			placeholder: '628123456789',
+			description: 'Phone number with country code or Group ID',
 		},
-		default: '',
-		placeholder: '628123456789',
-		description: 'Phone number with country code or Group ID',
-	},
+	}),
 	{
 		displayName: 'Message',
 		name: 'message',
@@ -382,6 +373,12 @@ export const sendProperties: INodeProperties[] = [
 			show: {
 				resource: ['send'],
 			},
+			hide: {
+				operation: [
+					'cancelScheduledSend', 'getScheduledSend', 'listScheduledSends',
+					'pauseScheduledSend', 'resumeScheduledSend', 'sendInteractive',
+				],
+			},
 		},
 		default: false,
 		description: 'Whether this is a forwarded message',
@@ -542,6 +539,115 @@ export const sendProperties: INodeProperties[] = [
 		default: 0,
 		description: 'Disappearing message duration in seconds (0 = no expiry)',
 	},
+	...operationProperties('send', ['sendText'], {
+		mentions: {
+			displayName: 'Mentions',
+			type: 'string',
+			default: '',
+			description: 'Comma-separated phone numbers or JIDs to mention. Use @everyone to mention all group participants.',
+		},
+		allowStatusReshare: {
+			displayName: 'Allow Status Reshare',
+			type: 'boolean',
+			default: false,
+			description: 'Whether viewers can reshare a message sent to status@broadcast',
+		},
+		scheduledAt: {
+			displayName: 'Scheduled At',
+			type: 'string',
+			default: '',
+			description: 'RFC3339 time with a timezone offset. Leave blank to send immediately.',
+		},
+		scheduleTimezone: {
+			displayName: 'Schedule Timezone',
+			type: 'string',
+			default: 'UTC',
+			description: 'IANA timezone for a scheduled message, such as Asia/Jakarta. Required when Scheduled At is set.',
+		},
+	}),
+	...operationProperties('send', [
+		'cancelScheduledSend',
+		'getScheduledSend',
+		'pauseScheduledSend',
+		'resumeScheduledSend',
+	], {
+		scheduleId: {
+			displayName: 'Schedule ID',
+			type: 'string',
+			required: true,
+			default: '',
+			description: 'ID returned when the message was scheduled',
+		},
+	}),
+	...operationProperties('send', ['listScheduledSends'], {
+		scheduleStatus: {
+			displayName: 'Schedule Status',
+			type: 'options',
+			options: [
+				{ name: 'Active', value: 'active' },
+				{ name: 'All Statuses', value: '' },
+				{ name: 'Cancelled', value: 'cancelled' },
+				{ name: 'Completed', value: 'completed' },
+				{ name: 'Failed', value: 'failed' },
+				{ name: 'Paused', value: 'paused' },
+				{ name: 'Running', value: 'running' },
+			],
+			default: '',
+			description: 'Filter schedules by status',
+		},
+		scheduleSearch: {
+			displayName: 'Search',
+			type: 'string',
+			default: '',
+			description: 'Search scheduled messages by recipient or summary',
+		},
+		schedulePageSize: {
+			displayName: 'Page Size',
+			type: 'number',
+			typeOptions: { minValue: 1, maxValue: 100, numberPrecision: 0 },
+			default: 25,
+			description: 'Maximum number of schedules to return',
+		},
+		scheduleOffset: {
+			displayName: 'Offset',
+			type: 'number',
+			typeOptions: { minValue: 0, numberPrecision: 0 },
+			default: 0,
+			description: 'Number of schedules to skip for pagination',
+		},
+	}),
+	...operationProperties('send', ['sendInteractive'], {
+		interactiveBody: {
+			displayName: 'Body Text',
+			type: 'string',
+			required: true,
+			default: '',
+			description: 'Main text shown above the interactive content',
+		},
+		interactiveFooter: {
+			displayName: 'Footer Text',
+			type: 'string',
+			default: '',
+			description: 'Optional text shown in the message footer',
+		},
+		interactiveLayout: {
+			displayName: 'Layout',
+			type: 'options',
+			options: [
+				{ name: 'Buttons or Selection List', value: 'buttons' },
+				{ name: 'Carousel Cards', value: 'cards' },
+			],
+			default: 'buttons',
+			description: 'Choose buttons, a selection list, or carousel cards',
+		},
+		interactiveItems: {
+			displayName: 'Items',
+			type: 'json',
+			required: true,
+			default: '[]',
+			description: 'JSON array of button or card objects. For a selection list, use a single_select button with title and sections in its params.',
+		},
+	}),
 ];
 
 async function handleFileUpload(this: IExecuteFunctions, endpoint: string, fileParam: string, apiFieldName: string, itemIndex: number): Promise<any> {
@@ -668,13 +774,47 @@ export const executeSendOperation: OperationExecutor = async function (
 		body: {} as any,
 	};
 
+	// Schedule operations do not have a recipient field.
+	switch (operation) {
+		case 'listScheduledSends':
+			return this.helpers.requestWithAuthentication.call(this, 'goWhatsappApi', {
+				method: 'GET',
+				url: `${baseUrl.replace(/\/$/, '')}/send/schedules`,
+				headers: deviceIdHeader,
+				qs: {
+					status: this.getNodeParameter('scheduleStatus', itemIndex, ''),
+					search: this.getNodeParameter('scheduleSearch', itemIndex, ''),
+					limit: this.getNodeParameter('schedulePageSize', itemIndex),
+					offset: this.getNodeParameter('scheduleOffset', itemIndex),
+				},
+				json: true,
+			});
+		case 'cancelScheduledSend':
+		case 'getScheduledSend':
+		case 'pauseScheduledSend':
+		case 'resumeScheduledSend': {
+			const scheduleId = encodeURIComponent(String(this.getNodeParameter('scheduleId', itemIndex)));
+			const action = {
+				cancelScheduledSend: '/cancel',
+				getScheduledSend: '',
+				pauseScheduledSend: '/pause',
+				resumeScheduledSend: '/resume',
+			}[operation];
+			return this.helpers.requestWithAuthentication.call(this, 'goWhatsappApi', {
+				method: action ? 'POST' : 'GET',
+				url: `${baseUrl.replace(/\/$/, '')}/send/schedules/${scheduleId}${action}`,
+				headers: deviceIdHeader,
+				json: true,
+			});
+		}
+	}
+
 	// Only get phone number for operations that need it (not sendPresence)
 	if (operation !== 'sendPresence') {
 		const phoneNumber = this.getNodeParameter('phoneNumber', itemIndex) as string;
 		requestOptions.body.phone = phoneNumber;
 
-		// Add common optional parameters for operations that support them (not for sendChatPresence)
-		if (operation !== 'sendChatPresence') {
+		if (operation !== 'sendChatPresence' && operation !== 'sendInteractive') {
 			const replyMessageId = this.getNodeParameter('replyMessageId', itemIndex, '') as string;
 			if (replyMessageId) {
 				requestOptions.body.reply_message_id = replyMessageId;
@@ -682,8 +822,7 @@ export const executeSendOperation: OperationExecutor = async function (
 		}
 	}
 
-	// Handle is_forwarded for all operations (including sendPresence)
-	const isForwarded = this.getNodeParameter('isForwarded', itemIndex, false) as boolean;
+	const isForwarded = operation !== 'sendInteractive' && this.getNodeParameter('isForwarded', itemIndex, false);
 	if (isForwarded) {
 		requestOptions.body.is_forwarded = isForwarded;
 	}
@@ -697,11 +836,52 @@ export const executeSendOperation: OperationExecutor = async function (
 	}
 
 	switch (operation) {
-		case 'sendText':
+		case 'sendText': {
 			const message = this.getNodeParameter('message', itemIndex) as string;
 			requestOptions.url = `${baseUrl.replace(/\/$/, '')}/send/message`;
 			requestOptions.body.message = message;
+			const scheduledAt = this.getNodeParameter('scheduledAt', itemIndex, '');
+			if (scheduledAt) {
+				requestOptions.body.scheduled_at = scheduledAt;
+				requestOptions.body.timezone = this.getNodeParameter('scheduleTimezone', itemIndex, 'UTC');
+			}
+			const mentions = String(this.getNodeParameter('mentions', itemIndex, ''))
+				.split(',')
+				.map((mention) => mention.trim())
+				.filter(Boolean);
+			if (mentions.length) {
+				requestOptions.body.mentions = mentions;
+			}
+			if (this.getNodeParameter('allowStatusReshare', itemIndex, false)) {
+				requestOptions.body.allow_reshare = true;
+			}
 			break;
+		}
+
+		case 'sendInteractive': {
+			const input = this.getNodeParameter('interactiveItems', itemIndex);
+			let items: unknown = input;
+			if (typeof input === 'string') {
+				try {
+					items = JSON.parse(input);
+				} catch {
+					throw new NodeOperationError(this.getNode(), 'Interactive items must be valid JSON', { itemIndex });
+				}
+			}
+			if (!Array.isArray(items) || items.length === 0) {
+				throw new NodeOperationError(this.getNode(), 'Interactive items must be a non-empty array', { itemIndex });
+			}
+			const layout = this.getNodeParameter('interactiveLayout', itemIndex);
+			const footer = this.getNodeParameter('interactiveFooter', itemIndex, '');
+			requestOptions.url = `${baseUrl.replace(/\/$/, '')}/send/interactive`;
+			requestOptions.body = {
+				phone: requestOptions.body.phone,
+				body: this.getNodeParameter('interactiveBody', itemIndex),
+				...(footer ? { footer } : {}),
+				...(layout === 'cards' ? { cards: items } : { buttons: items }),
+			};
+			break;
+		}
 
 		case 'sendLink':
 			const link = this.getNodeParameter('link', itemIndex) as string;

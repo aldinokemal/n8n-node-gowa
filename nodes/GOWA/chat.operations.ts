@@ -5,6 +5,7 @@ import {
 	NodeOperationError,
 } from 'n8n-workflow';
 import { OperationExecutor, RequestOptions } from './types';
+import { operationOptions, operationProperties } from './properties';
 import { getDeviceIdHeader } from './app.operations';
 
 export const chatOperations: INodeProperties[] = [
@@ -18,38 +19,29 @@ export const chatOperations: INodeProperties[] = [
 				resource: ['chat'],
 			},
 		},
-		options: [
-			{
-				name: 'Get Chat Messages',
-				value: 'getChatMessages',
-				description: 'Get messages from a specific chat',
-				action: 'Get messages from a specific chat',
-			},
-			{
-				name: 'Label Chat',
-				value: 'labelChat',
-				description: 'Apply or remove a label from a chat conversation',
-				action: 'Label or unlabel a chat',
-			},
-			{
-				name: 'List Chats',
-				value: 'listChats',
-				description: 'Get list of chats',
-				action: 'Get list of chats',
-			},
-			{
-				name: 'Pin Chat',
-				value: 'pinChat',
-				description: 'Pin or unpin a chat',
-				action: 'Pin or unpin a chat',
-			},
-			{
-				name: 'Set Disappearing Timer',
-				value: 'setDisappearingTimer',
-				description: 'Set or disable disappearing messages for a chat',
-				action: 'Set or disable disappearing messages for a chat',
-			},
-		],
+		options: operationOptions({
+			archiveChat: ['Archive Chat', 'Archive or unarchive a chat'],
+			getChatMessages: [
+				'Get Chat Messages',
+				'Get messages from a specific chat',
+			],
+			labelChat: [
+				'Label Chat',
+				'Label or unlabel a chat',
+				'Apply or remove a label from a chat conversation',
+			],
+			listChats: ['List Chats', 'Get list of chats'],
+			pinChat: ['Pin Chat', 'Pin or unpin a chat'],
+			requestChatHistory: [
+				'Request Chat History',
+				'Request older chat history',
+				'Ask the paired phone to sync older messages asynchronously',
+			],
+			setDisappearingTimer: [
+				'Set Disappearing Timer',
+				'Set or disable disappearing messages for a chat',
+			],
+		}),
 		default: 'listChats',
 	},
 ];
@@ -113,21 +105,23 @@ export const chatProperties: INodeProperties[] = [
 	},
 
 	// Properties for Get Chat Messages
-	{
-		displayName: 'Chat JID',
-		name: 'chatJid',
-		type: 'string',
-		required: true,
-		displayOptions: {
-			show: {
-				resource: ['chat'],
-				operation: ['getChatMessages', 'pinChat', 'setDisappearingTimer', 'labelChat'],
-			},
+	...operationProperties('chat', [
+		'getChatMessages',
+		'pinChat',
+		'setDisappearingTimer',
+		'labelChat',
+		'archiveChat',
+		'requestChatHistory',
+	], {
+		chatJid: {
+			displayName: 'Chat JID',
+			type: 'string',
+			required: true,
+			default: '',
+			description: 'Chat JID (e.g., phone@s.whatsapp.net for individual or groupid@g.us for group)',
+			placeholder: '6289685028129@s.whatsapp.net',
 		},
-		default: '',
-		description: 'Chat JID (e.g., phone@s.whatsapp.net for individual or groupid@g.us for group)',
-		placeholder: '6289685028129@s.whatsapp.net',
-	},
+	}),
 	{
 		displayName: 'Start Time',
 		name: 'startTime',
@@ -302,6 +296,36 @@ export const chatProperties: INodeProperties[] = [
 		default: true,
 		description: 'Whether to apply (true) or remove (false) the label',
 	},
+	...operationProperties('chat', ['archiveChat'], {
+		archiveChatState: {
+			displayName: 'Archived',
+			type: 'boolean',
+			default: true,
+			description: 'Whether to archive the chat',
+		},
+	}),
+	...operationProperties('chat', ['requestChatHistory'], {
+		historyCount: {
+			displayName: 'Message Count',
+			type: 'number',
+			typeOptions: { minValue: 1, maxValue: 500, numberPrecision: 0 },
+			default: 50,
+			description: 'Number of older messages to request from the phone',
+		},
+	}),
+	...operationProperties('chat', ['listChats'], {
+		archiveFilter: {
+			displayName: 'Archive Status',
+			type: 'options',
+			options: [
+				{ name: 'All Chats', value: '' },
+				{ name: 'Archived', value: 'true' },
+				{ name: 'Unarchived', value: 'false' },
+			],
+			default: '',
+			description: 'Filter chats by whether they are archived',
+		},
+	}),
 ];
 
 export const executeChatOperation: OperationExecutor = async function (
@@ -321,7 +345,7 @@ export const executeChatOperation: OperationExecutor = async function (
 	};
 
 	switch (operation) {
-		case 'listChats':
+		case 'listChats': {
 			requestOptions.url = `${baseUrl.replace(/\/$/, '')}/chats`;
 			requestOptions.qs = {
 				limit: this.getNodeParameter('limit', itemIndex),
@@ -329,7 +353,12 @@ export const executeChatOperation: OperationExecutor = async function (
 				search: this.getNodeParameter('search', itemIndex),
 				has_media: this.getNodeParameter('hasMedia', itemIndex),
 			};
+			const archiveFilter = this.getNodeParameter('archiveFilter', itemIndex, '');
+			if (archiveFilter !== '') {
+				requestOptions.qs.archived = archiveFilter;
+			}
 			break;
+		}
 		case 'getChatMessages':
 			const chatJidForMessages = this.getNodeParameter('chatJid', itemIndex) as string;
 			requestOptions.url = `${baseUrl.replace(/\/$/, '')}/chat/${chatJidForMessages}/messages`;
@@ -372,6 +401,20 @@ export const executeChatOperation: OperationExecutor = async function (
 				labeled: this.getNodeParameter('labeled', itemIndex),
 			};
 			break;
+		case 'archiveChat':
+		case 'requestChatHistory': {
+			const chatJid = encodeURIComponent(String(this.getNodeParameter('chatJid', itemIndex)));
+			const chatUrl = `${baseUrl.replace(/\/$/, '')}/chat/${chatJid}`;
+			requestOptions.method = 'POST';
+			if (operation === 'archiveChat') {
+				requestOptions.url = `${chatUrl}/archive`;
+				requestOptions.body = { archived: this.getNodeParameter('archiveChatState', itemIndex) };
+			} else {
+				requestOptions.url = `${chatUrl}/history`;
+				requestOptions.body = { count: this.getNodeParameter('historyCount', itemIndex) };
+			}
+			break;
+		}
 		default:
 			throw new NodeOperationError(this.getNode(), `Unknown chat operation: ${operation}`);
 	}

@@ -8,7 +8,9 @@ This is an n8n community node for [GOWA (Go WhatsApp Web MultiDevice)](https://g
 
 GOWA provides a comprehensive WhatsApp Web API implementation written in Go, supporting multi-device functionality and extensive WhatsApp features.
 
-**This version (3.0.0) is compatible with GOWA API v8.**
+**Version 4.0.0 targets [GOWA v9.10.0](https://github.com/aldinokemal/go-whatsapp-web-multidevice/releases/tag/v9.10.0).** Use the 3.x series for GOWA v8.
+
+Existing workflows keep their resource and operation IDs. GOWA v9.10.0 has no chat label endpoint, so **Label Chat** remains available for servers that expose that endpoint. Update workflows that use it before switching their GOWA server to v9.10.0.
 
 [n8n](https://n8n.io/) is a [fair-code licensed](https://docs.n8n.io/reference/license/) workflow automation platform.
 
@@ -46,7 +48,7 @@ This node supports the following operations:
 - **Logout** - Remove database and logout
 - **Reconnect** - Reconnect to WhatsApp Web
 
-### Device Management (v8)
+### Device Management
 
 - **List Devices** - List all registered devices with connection status
 - **Add Device** - Create a new device slot for multi-device management
@@ -60,9 +62,11 @@ This node supports the following operations:
 
 ### Send Messages
 
-- **Send Text** - Send text messages (with optional disappearing message duration)
+- **Send Text** - Send text with optional replies, mentions, disappearing duration, and one-time scheduling
+- **List/Get/Pause/Resume/Cancel Scheduled Sends** - Manage scheduled messages for the selected device
 - **Send Link** - Send links with optional caption
 - **Send Media** - Send media files (image, audio, video, or any file) with optional caption
+- **Send Interactive Message** - Send experimental buttons, lists, or carousel cards using GOWA’s interactive message schema
 - **Send Sticker** - Send sticker with automatic conversion to WebP format
 - **Send Contact** - Send contact information
 - **Send Location** - Send location coordinates
@@ -76,8 +80,10 @@ This node supports the following operations:
 - **Download Media** - Download media content from a message
 - **Revoke Message** - Revoke a message for everyone
 - **React to Message** - Add emoji reactions to messages
-- **Update Message** - Update message content
+- **Update Message** - Edit text, including an optional link preview, or update an image or document caption
 - **Read Message** - Mark message as read
+- **Mark as Played** - Send a played receipt for an incoming voice note or audio message
+- **Forward Message** - Forward a stored message by ID to the destination phone number or group
 - **Star Message** - Star a message
 - **Unstar Message** - Unstar a message
 
@@ -104,9 +110,15 @@ This node supports the following operations:
 - **Export Group Participants** - Export group participants as CSV
 - **Get Group Info From Link** - Get group information from an invitation link
 
+### Call Management
+
+- **Reject Call** - Reject a ringing call using the caller JID and call ID from the GOWA `call.offer` webhook
+
 ### Chat Management
 
-- **List Chats** - Get a list of all chat conversations
+- **List Chats** - List chat conversations with an optional archive filter
+- **Archive Chat** - Archive or unarchive a chat
+- **Request Chat History** - Ask the paired phone to sync older messages asynchronously. After they arrive, retrieve them with **Get Chat Messages**.
 - **Get Chat Messages** - Retrieve messages from a specific chat
 - **Label Chat** - Apply or remove a label from a chat conversation
 - **Pin Chat** - Pin or unpin a chat in the conversation list
@@ -127,7 +139,12 @@ This node supports the following operations:
 
 ### Newsletter Management
 
-- **Unfollow Newsletter** - Unfollow a newsletter
+- **Follow Newsletter / Unfollow Newsletter** - Manage channel follows
+- **Get Newsletter Info** - Look up a channel by ID or invite
+- **Search Newsletter Directory** - Search public channels by name
+- **Get Newsletter Messages / Get Newsletter Message Updates** - Retrieve recent posts or fetch their reaction and forward counts
+- **Download Newsletter Media** - Retrieve the URL and metadata for a media file downloaded by GOWA
+- **List Live Subscriptions / Subscribe to Live Updates / Unsubscribe From Live Updates** - Manage live channel updates delivered through GOWA webhooks
 
 ## Credentials
 
@@ -156,6 +173,40 @@ The credentials use HTTP Basic Authentication to connect to your GOWA API instan
 4. Enter your message text
 5. Execute the node
 
+### Example: Schedule a Text Message
+
+1. Select **Send → Send Text** and enter the recipient and message
+2. Set **Scheduled At** to a future RFC3339 timestamp, such as `2027-01-01T09:00:00+07:00`
+3. Set **Schedule Timezone** to an IANA name such as `Asia/Jakarta`
+4. Execute the node and use the returned schedule ID to look up, pause, resume, or cancel the send
+
+GOWA v9.10.0 does not deduplicate repeated schedule creation or message forwarding requests. Leave n8n's **Retry On Fail** disabled for these operations. After a timeout, check **List Scheduled Sends** or the destination chat before retrying.
+
+### Example: Send a Selection List
+
+Select **Send Interactive Message**, enter the recipient and body text, and set **Layout** to **Buttons or Selection List**. Enter this JSON in **Items**.
+
+```json
+[
+  {
+    "name": "single_select",
+    "params": {
+      "title": "Choose an option",
+      "sections": [
+        {
+          "title": "Options",
+          "rows": [{ "id": "status", "title": "Order status" }]
+        }
+      ]
+    }
+  }
+]
+```
+
+### Contact Presence Updates
+
+For continuous updates after **Subscribe to Presence**, set `WHATSAPP_PRESENCE_ON_CONNECT=available` and `WHATSAPP_PRESENCE_PULSE_ENABLED=false` on the GOWA server. Keeping the linked device available suppresses push notifications on the phone. [GOWA webhook documentation](https://github.com/aldinokemal/go-whatsapp-web-multidevice/blob/v9.10.0/docs/webhook-payload.md#presence-events)
+
 ### Example: Send Media
 
 1. Select **Send** as the resource
@@ -174,7 +225,7 @@ The credentials use HTTP Basic Authentication to connect to your GOWA API instan
 2. Select **Add Device** to create a new device slot
 3. Use **Login Device** or **Login Device with Code** to authenticate
 4. Use **Get Device Status** to check connection status
-5. For app/chat/group/message/newsletter/send/user operations, you can set **Device ID** directly in the node to override credential Device ID dynamically per item
+5. For app/call/chat/group/message/newsletter/send/user operations, you can set **Device ID** directly in the node to override credential Device ID dynamically per item
 
 ### Example: Get Business Profile
 

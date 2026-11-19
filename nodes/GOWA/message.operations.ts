@@ -5,6 +5,7 @@ import {
 	NodeOperationError,
 } from 'n8n-workflow';
 import { OperationExecutor, RequestOptions } from './types';
+import { operationOptions, operationProperties } from './properties';
 import { getDeviceIdHeader } from './app.operations';
 
 export const messageOperations: INodeProperties[] = [
@@ -18,56 +19,30 @@ export const messageOperations: INodeProperties[] = [
 				resource: ['message'],
 			},
 		},
-		options: [
-			{
-				name: 'Delete Message',
-				value: 'deleteMessage',
-				description: 'Delete a message',
-				action: 'Delete a message',
-			},
-			{
-				name: 'Download Media',
-				value: 'downloadMedia',
-				description: 'Download media content from a message',
-				action: 'Download media from message',
-			},
-			{
-				name: 'React to Message',
-				value: 'reactMessage',
-				description: 'React to a message',
-				action: 'React to a message',
-			},
-			{
-				name: 'Read Message',
-				value: 'readMessage',
-				description: 'Mark message as read',
-				action: 'Mark message as read',
-			},
-			{
-				name: 'Revoke Message',
-				value: 'revokeMessage',
-				description: 'Revoke a message',
-				action: 'Revoke a message',
-			},
-			{
-				name: 'Star Message',
-				value: 'starMessage',
-				description: 'Star a message',
-				action: 'Star a message',
-			},
-			{
-				name: 'Unstar Message',
-				value: 'unstarMessage',
-				description: 'Unstar a message',
-				action: 'Unstar a message',
-			},
-			{
-				name: 'Update Message',
-				value: 'updateMessage',
-				description: 'Update a message',
-				action: 'Update a message',
-			},
-		],
+		options: operationOptions({
+			deleteMessage: ['Delete Message', 'Delete a message'],
+			downloadMedia: [
+				'Download Media',
+				'Download media from message',
+				'Download media content from a message',
+			],
+			forwardMessage: [
+				'Forward Message',
+				'Forward a stored message',
+				'Forward a message from local chat storage to another chat',
+			],
+			markAsPlayed: [
+				'Mark as Played',
+				'Mark an audio message as played',
+				'Send a played receipt for an incoming audio message or voice note',
+			],
+			reactMessage: ['React to Message', 'React to a message'],
+			readMessage: ['Read Message', 'Mark message as read'],
+			revokeMessage: ['Revoke Message', 'Revoke a message'],
+			starMessage: ['Star Message', 'Star a message'],
+			unstarMessage: ['Unstar Message', 'Unstar a message'],
+			updateMessage: ['Update Message', 'Update a message'],
+		}),
 		default: 'revokeMessage',
 	},
 ];
@@ -84,7 +59,7 @@ export const messageProperties: INodeProperties[] = [
 			},
 		},
 		default: '',
-		description: 'Phone number (for private chat) or Group ID (for group chat)',
+		description: 'Phone number or group ID. For Forward Message, enter the destination chat.',
 	},
 	{
 		displayName: 'Message ID',
@@ -126,6 +101,42 @@ export const messageProperties: INodeProperties[] = [
 		default: '',
 		description: 'The new content of the message',
 	},
+	...operationProperties('message', ['forwardMessage'], {
+		forceReupload: {
+			displayName: 'Force Reupload',
+			type: 'boolean',
+			default: false,
+			description: 'Whether to reupload media instead of reusing the original reference',
+		},
+	}),
+	...operationProperties('message', ['updateMessage'], {
+		editMediaType: {
+			displayName: 'Content Type',
+			type: 'options',
+			options: [
+				{ name: 'Document Caption', value: 'document' },
+				{ name: 'Image Caption', value: 'image' },
+				{ name: 'Text', value: '' },
+			],
+			default: '',
+			description: 'Select the original message type to edit text or a media caption',
+		},
+	}),
+	{
+		displayName: 'Link Preview URL',
+		name: 'editLink',
+		type: 'string',
+		placeholder: 'https://example.com',
+		displayOptions: {
+			show: {
+				resource: ['message'],
+				operation: ['updateMessage'],
+				editMediaType: [''],
+			},
+		},
+		default: '',
+		description: 'Optional URL to include as a link preview when editing text',
+	},
 ];
 
 export const executeMessageOperation: OperationExecutor = async function (
@@ -163,6 +174,13 @@ export const executeMessageOperation: OperationExecutor = async function (
 			requestOptions.url = `${baseUrl.replace(/\/$/, '')}/message/${messageId}/reaction`;
 			requestOptions.body.emoji = emoji;
 			break;
+		case 'forwardMessage':
+			requestOptions.url = `${baseUrl.replace(/\/$/, '')}/message/${messageId}/forward`;
+			requestOptions.body.force_reupload = this.getNodeParameter('forceReupload', itemIndex);
+			break;
+		case 'markAsPlayed':
+			requestOptions.url = `${baseUrl.replace(/\/$/, '')}/message/${messageId}/played`;
+			break;
 		case 'readMessage':
 			requestOptions.url = `${baseUrl.replace(/\/$/, '')}/message/${messageId}/read`;
 			break;
@@ -175,11 +193,21 @@ export const executeMessageOperation: OperationExecutor = async function (
 		case 'unstarMessage':
 			requestOptions.url = `${baseUrl.replace(/\/$/, '')}/message/${messageId}/unstar`;
 			break;
-		case 'updateMessage':
+		case 'updateMessage': {
 			const newMessage = this.getNodeParameter('newMessage', itemIndex) as string;
 			requestOptions.url = `${baseUrl.replace(/\/$/, '')}/message/${messageId}/update`;
 			requestOptions.body.message = newMessage;
+			const mediaType = this.getNodeParameter('editMediaType', itemIndex, '');
+			if (mediaType) {
+				requestOptions.body.media_type = mediaType;
+			} else {
+				const link = this.getNodeParameter('editLink', itemIndex, '');
+				if (link) {
+					requestOptions.body.link = link;
+				}
+			}
 			break;
+		}
 		default:
 			throw new NodeOperationError(this.getNode(), `Unknown message operation: ${operation}`);
 	}

@@ -1,7 +1,7 @@
 {
   "name": "@aldinokemal2104/n8n-nodes-gowa",
-  "version": "3.2.0",
-  "description": "n8n community node for Go WhatsApp Web MultiDevice API v8",
+  "version": "4.0.0",
+  "description": "n8n community node for Go WhatsApp Web MultiDevice API v9",
   "keywords": [
     "n8n-community-node-package",
     "whatsapp",
@@ -25,6 +25,7 @@
   "scripts": {
     "build": "npx rimraf dist && tsc && gulp build:icons",
     "dev": "tsc --watch",
+    "test": "npm run build && node --test",
     "format": "prettier nodes credentials --write",
     "lint": "eslint nodes credentials package.json",
     "lintfix": "eslint nodes credentials package.json --fix",
