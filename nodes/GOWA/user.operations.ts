@@ -49,7 +49,7 @@ export const userOperations: INodeProperties[] = [
 			subscribePresence: [
 				'Subscribe to Presence',
 				'Subscribe to contact presence',
-				'Receive contact presence updates through GOWA webhooks',
+				'Receive contact presence updates through GOWA webhooks. For continuous tracking, set WHATSAPP_PRESENCE_ON_CONNECT=available and WHATSAPP_PRESENCE_PULSE_ENABLED=false on the server. Keeping the device available suppresses phone push notifications.',
 			],
 		}),
 		default: 'getUserInfo',

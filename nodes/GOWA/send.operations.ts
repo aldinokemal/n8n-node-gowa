@@ -373,6 +373,12 @@ export const sendProperties: INodeProperties[] = [
 			show: {
 				resource: ['send'],
 			},
+			hide: {
+				operation: [
+					'cancelScheduledSend', 'getScheduledSend', 'listScheduledSends',
+					'pauseScheduledSend', 'resumeScheduledSend', 'sendInteractive',
+				],
+			},
 		},
 		default: false,
 		description: 'Whether this is a forwarded message',
@@ -628,18 +634,18 @@ export const sendProperties: INodeProperties[] = [
 			displayName: 'Layout',
 			type: 'options',
 			options: [
-				{ name: 'Buttons', value: 'buttons' },
+				{ name: 'Buttons or Selection List', value: 'buttons' },
 				{ name: 'Carousel Cards', value: 'cards' },
 			],
 			default: 'buttons',
-			description: 'Choose buttons or carousel cards',
+			description: 'Choose buttons, a selection list, or carousel cards',
 		},
 		interactiveItems: {
 			displayName: 'Items',
 			type: 'json',
 			required: true,
 			default: '[]',
-			description: 'JSON array of button or card objects in the format defined by the GOWA InteractiveSendRequest schema',
+			description: 'JSON array of button or card objects. For a selection list, use a single_select button with title and sections in its params.',
 		},
 	}),
 ];
@@ -808,8 +814,7 @@ export const executeSendOperation: OperationExecutor = async function (
 		const phoneNumber = this.getNodeParameter('phoneNumber', itemIndex) as string;
 		requestOptions.body.phone = phoneNumber;
 
-		// Add common optional parameters for operations that support them (not for sendChatPresence)
-		if (operation !== 'sendChatPresence') {
+		if (operation !== 'sendChatPresence' && operation !== 'sendInteractive') {
 			const replyMessageId = this.getNodeParameter('replyMessageId', itemIndex, '') as string;
 			if (replyMessageId) {
 				requestOptions.body.reply_message_id = replyMessageId;
@@ -817,8 +822,7 @@ export const executeSendOperation: OperationExecutor = async function (
 		}
 	}
 
-	// Handle is_forwarded for all operations (including sendPresence)
-	const isForwarded = this.getNodeParameter('isForwarded', itemIndex, false) as boolean;
+	const isForwarded = operation !== 'sendInteractive' && this.getNodeParameter('isForwarded', itemIndex, false);
 	if (isForwarded) {
 		requestOptions.body.is_forwarded = isForwarded;
 	}

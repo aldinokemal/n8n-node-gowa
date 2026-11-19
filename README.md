@@ -180,6 +180,33 @@ The credentials use HTTP Basic Authentication to connect to your GOWA API instan
 3. Set **Schedule Timezone** to an IANA name such as `Asia/Jakarta`
 4. Execute the node and use the returned schedule ID to look up, pause, resume, or cancel the send
 
+GOWA v9.10.0 does not deduplicate repeated schedule creation or message forwarding requests. Leave n8n's **Retry On Fail** disabled for these operations. After a timeout, check **List Scheduled Sends** or the destination chat before retrying.
+
+### Example: Send a Selection List
+
+Select **Send Interactive Message**, enter the recipient and body text, and set **Layout** to **Buttons or Selection List**. Enter this JSON in **Items**.
+
+```json
+[
+  {
+    "name": "single_select",
+    "params": {
+      "title": "Choose an option",
+      "sections": [
+        {
+          "title": "Options",
+          "rows": [{ "id": "status", "title": "Order status" }]
+        }
+      ]
+    }
+  }
+]
+```
+
+### Contact Presence Updates
+
+For continuous updates after **Subscribe to Presence**, set `WHATSAPP_PRESENCE_ON_CONNECT=available` and `WHATSAPP_PRESENCE_PULSE_ENABLED=false` on the GOWA server. Keeping the linked device available suppresses push notifications on the phone. [GOWA webhook documentation](https://github.com/aldinokemal/go-whatsapp-web-multidevice/blob/v9.10.0/docs/webhook-payload.md#presence-events)
+
 ### Example: Send Media
 
 1. Select **Send** as the resource
