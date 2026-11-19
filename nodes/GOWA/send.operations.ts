@@ -5,6 +5,7 @@ import {
 	NodeOperationError,
 } from 'n8n-workflow';
 import { OperationExecutor, RequestOptions } from './types';
+import { operationOptions, operationProperties } from './properties';
 import { getDeviceIdHeader } from './app.operations';
 
 export const sendOperations: INodeProperties[] = [
@@ -18,118 +19,72 @@ export const sendOperations: INodeProperties[] = [
 				resource: ['send'],
 			},
 		},
-		options: [
-			{
-				name: 'Cancel Scheduled Send',
-				value: 'cancelScheduledSend',
-				description: 'Cancel a scheduled message',
-				action: 'Cancel a scheduled send',
-			},
-			{
-				name: 'Get Scheduled Send',
-				value: 'getScheduledSend',
-				description: 'Get details of a scheduled message',
-				action: 'Get a scheduled send',
-			},
-			{
-				name: 'List Scheduled Sends',
-				value: 'listScheduledSends',
-				description: 'List scheduled messages for the selected device',
-				action: 'List scheduled sends',
-			},
-			{
-				name: 'Pause Scheduled Send',
-				value: 'pauseScheduledSend',
-				description: 'Pause a scheduled message',
-				action: 'Pause a scheduled send',
-			},
-			{
-				name: 'Resume Scheduled Send',
-				value: 'resumeScheduledSend',
-				description: 'Resume a paused scheduled message',
-				action: 'Resume a scheduled send',
-			},
-			{
-				name: 'Send Chat Presence',
-				value: 'sendChatPresence',
-				description: 'Send typing indicator to start or stop showing that you are composing a message',
-				action: 'Send chat presence typing indicator',
-			},
-			{
-				name: 'Send Contact',
-				value: 'sendContact',
-				description: 'Send a contact',
-				action: 'Send a contact',
-			},
-			{
-				name: 'Send Interactive Message',
-				value: 'sendInteractive',
-				description: 'Send experimental WhatsApp buttons, lists, or carousel cards',
-				action: 'Send an interactive message',
-			},
-			{
-				name: 'Send Link',
-				value: 'sendLink',
-				description: 'Send a link',
-				action: 'Send a link',
-			},
-			{
-				name: 'Send Location',
-				value: 'sendLocation',
-				description: 'Send a location',
-				action: 'Send a location',
-			},
-			{
-				name: 'Send Media',
-				value: 'sendMedia',
-				description: 'Send media files (image, audio, video, or any file)',
-				action: 'Send media files',
-			},
-			{
-				name: 'Send Poll',
-				value: 'sendPoll',
-				description: 'Send a poll with multiple options',
-				action: 'Send a poll',
-			},
-			{
-				name: 'Send Presence',
-				value: 'sendPresence',
-				description: 'Send presence status',
-				action: 'Send presence status',
-			},
-			{
-				name: 'Send Sticker',
-				value: 'sendSticker',
-				description: 'Send sticker with automatic conversion to WebP format',
-				action: 'Send a sticker',
-			},
-			{
-				name: 'Send Text',
-				value: 'sendText',
-				description: 'Send a text message',
-				action: 'Send a text message',
-			},
-		],
+		options: operationOptions({
+			cancelScheduledSend: [
+				'Cancel Scheduled Send',
+				'Cancel a scheduled send',
+				'Cancel a scheduled message',
+			],
+			getScheduledSend: ['Get Scheduled Send', 'Get a scheduled send', 'Get details of a scheduled message'],
+			listScheduledSends: [
+				'List Scheduled Sends',
+				'List scheduled sends',
+				'List scheduled messages for the selected device',
+			],
+			pauseScheduledSend: ['Pause Scheduled Send', 'Pause a scheduled send', 'Pause a scheduled message'],
+			resumeScheduledSend: [
+				'Resume Scheduled Send',
+				'Resume a scheduled send',
+				'Resume a paused scheduled message',
+			],
+			sendChatPresence: [
+				'Send Chat Presence',
+				'Send chat presence typing indicator',
+				'Send typing indicator to start or stop showing that you are composing a message',
+			],
+			sendContact: ['Send Contact', 'Send a contact'],
+			sendInteractive: [
+				'Send Interactive Message',
+				'Send an interactive message',
+				'Send experimental WhatsApp buttons, lists, or carousel cards',
+			],
+			sendLink: ['Send Link', 'Send a link'],
+			sendLocation: ['Send Location', 'Send a location'],
+			sendMedia: ['Send Media', 'Send media files', 'Send media files (image, audio, video, or any file)'],
+			sendPoll: ['Send Poll', 'Send a poll', 'Send a poll with multiple options'],
+			sendPresence: ['Send Presence', 'Send presence status'],
+			sendSticker: [
+				'Send Sticker',
+				'Send a sticker',
+				'Send sticker with automatic conversion to WebP format',
+			],
+			sendText: ['Send Text', 'Send a text message'],
+		}),
 		default: 'sendText',
 	},
 ];
 
 export const sendProperties: INodeProperties[] = [
-	{
-		displayName: 'Phone or Group ID',
-		name: 'phoneNumber',
-		type: 'string',
-		required: true,
-		displayOptions: {
-			show: {
-				resource: ['send'],
-				operation: ['sendText', 'sendContact', 'sendLink', 'sendLocation', 'sendChatPresence', 'sendPoll', 'sendMedia', 'sendSticker', 'sendInteractive'],
-			},
+	...operationProperties('send', [
+		'sendText',
+		'sendContact',
+		'sendLink',
+		'sendLocation',
+		'sendChatPresence',
+		'sendPoll',
+		'sendMedia',
+		'sendSticker',
+		'sendInteractive',
+	], {
+		phoneNumber: {
+			displayName: 'Phone or Group ID',
+			type: 'string',
+			required: true,
+			default: '',
+			placeholder: '628123456789',
+			description: 'Phone number with country code or Group ID',
 		},
-		default: '',
-		placeholder: '628123456789',
-		description: 'Phone number with country code or Group ID',
-	},
+	}),
 	{
 		displayName: 'Message',
 		name: 'message',
@@ -578,193 +533,115 @@ export const sendProperties: INodeProperties[] = [
 		default: 0,
 		description: 'Disappearing message duration in seconds (0 = no expiry)',
 	},
-	{
-		displayName: 'Mentions',
-		name: 'mentions',
-		type: 'string',
-		displayOptions: {
-			show: {
-				resource: ['send'],
-				operation: ['sendText'],
-			},
+	...operationProperties('send', ['sendText'], {
+		mentions: {
+			displayName: 'Mentions',
+			type: 'string',
+			default: '',
+			description: 'Comma-separated phone numbers or JIDs to mention. Use @everyone to mention all group participants.',
 		},
-		default: '',
-		description: 'Comma-separated phone numbers or JIDs to mention. Use @everyone to mention all group participants.',
-	},
-	{
-		displayName: 'Allow Status Reshare',
-		name: 'allowStatusReshare',
-		type: 'boolean',
-		displayOptions: {
-			show: {
-				resource: ['send'],
-				operation: ['sendText'],
-			},
+		allowStatusReshare: {
+			displayName: 'Allow Status Reshare',
+			type: 'boolean',
+			default: false,
+			description: 'Whether viewers can reshare a message sent to status@broadcast',
 		},
-		default: false,
-		description: 'Whether viewers can reshare a message sent to status@broadcast',
-	},
-	{
-		displayName: 'Scheduled At',
-		name: 'scheduledAt',
-		type: 'string',
-		displayOptions: {
-			show: {
-				resource: ['send'],
-				operation: ['sendText'],
-			},
+		scheduledAt: {
+			displayName: 'Scheduled At',
+			type: 'string',
+			default: '',
+			description: 'RFC3339 time with a timezone offset. Leave blank to send immediately.',
 		},
-		default: '',
-		description: 'RFC3339 time with a timezone offset. Leave blank to send immediately.',
-	},
-	{
-		displayName: 'Schedule Timezone',
-		name: 'scheduleTimezone',
-		type: 'string',
-		displayOptions: {
-			show: {
-				resource: ['send'],
-				operation: ['sendText'],
-			},
+		scheduleTimezone: {
+			displayName: 'Schedule Timezone',
+			type: 'string',
+			default: 'UTC',
+			description: 'IANA timezone for a scheduled message, such as Asia/Jakarta. Required when Scheduled At is set.',
 		},
-		default: 'UTC',
-		description: 'IANA timezone for a scheduled message, such as Asia/Jakarta. Required when Scheduled At is set.',
-	},
-	{
-		displayName: 'Schedule ID',
-		name: 'scheduleId',
-		type: 'string',
-		required: true,
-		displayOptions: {
-			show: {
-				resource: ['send'],
-				operation: ['cancelScheduledSend', 'getScheduledSend', 'pauseScheduledSend', 'resumeScheduledSend'],
-			},
+	}),
+	...operationProperties('send', [
+		'cancelScheduledSend',
+		'getScheduledSend',
+		'pauseScheduledSend',
+		'resumeScheduledSend',
+	], {
+		scheduleId: {
+			displayName: 'Schedule ID',
+			type: 'string',
+			required: true,
+			default: '',
+			description: 'ID returned when the message was scheduled',
 		},
-		default: '',
-		description: 'ID returned when the message was scheduled',
-	},
-	{
-		displayName: 'Schedule Status',
-		name: 'scheduleStatus',
-		type: 'options',
-		options: [
-			{ name: 'Active', value: 'active' },
-			{ name: 'All Statuses', value: '' },
-			{ name: 'Cancelled', value: 'cancelled' },
-			{ name: 'Completed', value: 'completed' },
-			{ name: 'Failed', value: 'failed' },
-			{ name: 'Paused', value: 'paused' },
-			{ name: 'Running', value: 'running' },
-		],
-		displayOptions: {
-			show: {
-				resource: ['send'],
-				operation: ['listScheduledSends'],
-			},
+	}),
+	...operationProperties('send', ['listScheduledSends'], {
+		scheduleStatus: {
+			displayName: 'Schedule Status',
+			type: 'options',
+			options: [
+				{ name: 'Active', value: 'active' },
+				{ name: 'All Statuses', value: '' },
+				{ name: 'Cancelled', value: 'cancelled' },
+				{ name: 'Completed', value: 'completed' },
+				{ name: 'Failed', value: 'failed' },
+				{ name: 'Paused', value: 'paused' },
+				{ name: 'Running', value: 'running' },
+			],
+			default: '',
+			description: 'Filter schedules by status',
 		},
-		default: '',
-		description: 'Filter schedules by status',
-	},
-	{
-		displayName: 'Search',
-		name: 'scheduleSearch',
-		type: 'string',
-		displayOptions: {
-			show: {
-				resource: ['send'],
-				operation: ['listScheduledSends'],
-			},
+		scheduleSearch: {
+			displayName: 'Search',
+			type: 'string',
+			default: '',
+			description: 'Search scheduled messages by recipient or summary',
 		},
-		default: '',
-		description: 'Search scheduled messages by recipient or summary',
-	},
-	{
-		displayName: 'Page Size',
-		name: 'schedulePageSize',
-		type: 'number',
-		typeOptions: { minValue: 1, maxValue: 100, numberPrecision: 0 },
-		displayOptions: {
-			show: {
-				resource: ['send'],
-				operation: ['listScheduledSends'],
-			},
+		schedulePageSize: {
+			displayName: 'Page Size',
+			type: 'number',
+			typeOptions: { minValue: 1, maxValue: 100, numberPrecision: 0 },
+			default: 25,
+			description: 'Maximum number of schedules to return',
 		},
-		default: 25,
-		description: 'Maximum number of schedules to return',
-	},
-	{
-		displayName: 'Offset',
-		name: 'scheduleOffset',
-		type: 'number',
-		typeOptions: { minValue: 0, numberPrecision: 0 },
-		displayOptions: {
-			show: {
-				resource: ['send'],
-				operation: ['listScheduledSends'],
-			},
+		scheduleOffset: {
+			displayName: 'Offset',
+			type: 'number',
+			typeOptions: { minValue: 0, numberPrecision: 0 },
+			default: 0,
+			description: 'Number of schedules to skip for pagination',
 		},
-		default: 0,
-		description: 'Number of schedules to skip for pagination',
-	},
-	{
-		displayName: 'Body Text',
-		name: 'interactiveBody',
-		type: 'string',
-		required: true,
-		displayOptions: {
-			show: {
-				resource: ['send'],
-				operation: ['sendInteractive'],
-			},
+	}),
+	...operationProperties('send', ['sendInteractive'], {
+		interactiveBody: {
+			displayName: 'Body Text',
+			type: 'string',
+			required: true,
+			default: '',
+			description: 'Main text shown above the interactive content',
 		},
-		default: '',
-		description: 'Main text shown above the interactive content',
-	},
-	{
-		displayName: 'Footer Text',
-		name: 'interactiveFooter',
-		type: 'string',
-		displayOptions: {
-			show: {
-				resource: ['send'],
-				operation: ['sendInteractive'],
-			},
+		interactiveFooter: {
+			displayName: 'Footer Text',
+			type: 'string',
+			default: '',
+			description: 'Optional text shown in the message footer',
 		},
-		default: '',
-		description: 'Optional text shown in the message footer',
-	},
-	{
-		displayName: 'Layout',
-		name: 'interactiveLayout',
-		type: 'options',
-		options: [
-			{ name: 'Buttons', value: 'buttons' },
-			{ name: 'Carousel Cards', value: 'cards' },
-		],
-		displayOptions: {
-			show: {
-				resource: ['send'],
-				operation: ['sendInteractive'],
-			},
+		interactiveLayout: {
+			displayName: 'Layout',
+			type: 'options',
+			options: [
+				{ name: 'Buttons', value: 'buttons' },
+				{ name: 'Carousel Cards', value: 'cards' },
+			],
+			default: 'buttons',
+			description: 'Choose buttons or carousel cards',
 		},
-		default: 'buttons',
-		description: 'Choose buttons or carousel cards',
-	},
-	{
-		displayName: 'Items',
-		name: 'interactiveItems',
-		type: 'json',
-		required: true,
-		displayOptions: {
-			show: {
-				resource: ['send'],
-				operation: ['sendInteractive'],
-			},
+		interactiveItems: {
+			displayName: 'Items',
+			type: 'json',
+			required: true,
+			default: '[]',
+			description: 'JSON array of button or card objects in the format defined by the GOWA InteractiveSendRequest schema',
 		},
-		default: '[]',
-		description: 'JSON array of button or card objects in the format defined by the GOWA InteractiveSendRequest schema',
-	},
+	}),
 ];
 
 async function handleFileUpload(this: IExecuteFunctions, endpoint: string, fileParam: string, apiFieldName: string, itemIndex: number): Promise<any> {

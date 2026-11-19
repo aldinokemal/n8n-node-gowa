@@ -5,6 +5,7 @@ import {
 	NodeOperationError,
 } from 'n8n-workflow';
 import { OperationExecutor, RequestOptions } from './types';
+import { operationOptions, operationProperties } from './properties';
 import { getDeviceIdHeader } from './app.operations';
 
 export const messageOperations: INodeProperties[] = [
@@ -18,68 +19,30 @@ export const messageOperations: INodeProperties[] = [
 				resource: ['message'],
 			},
 		},
-		options: [
-			{
-				name: 'Delete Message',
-				value: 'deleteMessage',
-				description: 'Delete a message',
-				action: 'Delete a message',
-			},
-			{
-				name: 'Download Media',
-				value: 'downloadMedia',
-				description: 'Download media content from a message',
-				action: 'Download media from message',
-			},
-			{
-				name: 'Forward Message',
-				value: 'forwardMessage',
-				description: 'Forward a message from local chat storage to another chat',
-				action: 'Forward a stored message',
-			},
-			{
-				name: 'Mark as Played',
-				value: 'markAsPlayed',
-				description: 'Send a played receipt for an incoming audio message or voice note',
-				action: 'Mark an audio message as played',
-			},
-			{
-				name: 'React to Message',
-				value: 'reactMessage',
-				description: 'React to a message',
-				action: 'React to a message',
-			},
-			{
-				name: 'Read Message',
-				value: 'readMessage',
-				description: 'Mark message as read',
-				action: 'Mark message as read',
-			},
-			{
-				name: 'Revoke Message',
-				value: 'revokeMessage',
-				description: 'Revoke a message',
-				action: 'Revoke a message',
-			},
-			{
-				name: 'Star Message',
-				value: 'starMessage',
-				description: 'Star a message',
-				action: 'Star a message',
-			},
-			{
-				name: 'Unstar Message',
-				value: 'unstarMessage',
-				description: 'Unstar a message',
-				action: 'Unstar a message',
-			},
-			{
-				name: 'Update Message',
-				value: 'updateMessage',
-				description: 'Update a message',
-				action: 'Update a message',
-			},
-		],
+		options: operationOptions({
+			deleteMessage: ['Delete Message', 'Delete a message'],
+			downloadMedia: [
+				'Download Media',
+				'Download media from message',
+				'Download media content from a message',
+			],
+			forwardMessage: [
+				'Forward Message',
+				'Forward a stored message',
+				'Forward a message from local chat storage to another chat',
+			],
+			markAsPlayed: [
+				'Mark as Played',
+				'Mark an audio message as played',
+				'Send a played receipt for an incoming audio message or voice note',
+			],
+			reactMessage: ['React to Message', 'React to a message'],
+			readMessage: ['Read Message', 'Mark message as read'],
+			revokeMessage: ['Revoke Message', 'Revoke a message'],
+			starMessage: ['Star Message', 'Star a message'],
+			unstarMessage: ['Unstar Message', 'Unstar a message'],
+			updateMessage: ['Update Message', 'Update a message'],
+		}),
 		default: 'revokeMessage',
 	},
 ];
@@ -138,37 +101,27 @@ export const messageProperties: INodeProperties[] = [
 		default: '',
 		description: 'The new content of the message',
 	},
-	{
-		displayName: 'Force Reupload',
-		name: 'forceReupload',
-		type: 'boolean',
-		displayOptions: {
-			show: {
-				resource: ['message'],
-				operation: ['forwardMessage'],
-			},
+	...operationProperties('message', ['forwardMessage'], {
+		forceReupload: {
+			displayName: 'Force Reupload',
+			type: 'boolean',
+			default: false,
+			description: 'Whether to reupload media instead of reusing the original reference',
 		},
-		default: false,
-		description: 'Whether to reupload media instead of reusing the original reference',
-	},
-	{
-		displayName: 'Content Type',
-		name: 'editMediaType',
-		type: 'options',
-		options: [
-			{ name: 'Document Caption', value: 'document' },
-			{ name: 'Image Caption', value: 'image' },
-			{ name: 'Text', value: '' },
-		],
-		displayOptions: {
-			show: {
-				resource: ['message'],
-				operation: ['updateMessage'],
-			},
+	}),
+	...operationProperties('message', ['updateMessage'], {
+		editMediaType: {
+			displayName: 'Content Type',
+			type: 'options',
+			options: [
+				{ name: 'Document Caption', value: 'document' },
+				{ name: 'Image Caption', value: 'image' },
+				{ name: 'Text', value: '' },
+			],
+			default: '',
+			description: 'Select the original message type to edit text or a media caption',
 		},
-		default: '',
-		description: 'Select the original message type to edit text or a media caption',
-	},
+	}),
 	{
 		displayName: 'Link Preview URL',
 		name: 'editLink',

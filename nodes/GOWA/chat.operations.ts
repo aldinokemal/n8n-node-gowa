@@ -5,6 +5,7 @@ import {
 	NodeOperationError,
 } from 'n8n-workflow';
 import { OperationExecutor, RequestOptions } from './types';
+import { operationOptions, operationProperties } from './properties';
 import { getDeviceIdHeader } from './app.operations';
 
 export const chatOperations: INodeProperties[] = [
@@ -18,50 +19,29 @@ export const chatOperations: INodeProperties[] = [
 				resource: ['chat'],
 			},
 		},
-		options: [
-			{
-				name: 'Archive Chat',
-				value: 'archiveChat',
-				description: 'Archive or unarchive a chat',
-				action: 'Archive or unarchive a chat',
-			},
-			{
-				name: 'Get Chat Messages',
-				value: 'getChatMessages',
-				description: 'Get messages from a specific chat',
-				action: 'Get messages from a specific chat',
-			},
-			{
-				name: 'Label Chat',
-				value: 'labelChat',
-				description: 'Apply or remove a label from a chat conversation',
-				action: 'Label or unlabel a chat',
-			},
-			{
-				name: 'List Chats',
-				value: 'listChats',
-				description: 'Get list of chats',
-				action: 'Get list of chats',
-			},
-			{
-				name: 'Pin Chat',
-				value: 'pinChat',
-				description: 'Pin or unpin a chat',
-				action: 'Pin or unpin a chat',
-			},
-			{
-				name: 'Request Chat History',
-				value: 'requestChatHistory',
-				description: 'Ask the paired phone to sync older messages asynchronously',
-				action: 'Request older chat history',
-			},
-			{
-				name: 'Set Disappearing Timer',
-				value: 'setDisappearingTimer',
-				description: 'Set or disable disappearing messages for a chat',
-				action: 'Set or disable disappearing messages for a chat',
-			},
-		],
+		options: operationOptions({
+			archiveChat: ['Archive Chat', 'Archive or unarchive a chat'],
+			getChatMessages: [
+				'Get Chat Messages',
+				'Get messages from a specific chat',
+			],
+			labelChat: [
+				'Label Chat',
+				'Label or unlabel a chat',
+				'Apply or remove a label from a chat conversation',
+			],
+			listChats: ['List Chats', 'Get list of chats'],
+			pinChat: ['Pin Chat', 'Pin or unpin a chat'],
+			requestChatHistory: [
+				'Request Chat History',
+				'Request older chat history',
+				'Ask the paired phone to sync older messages asynchronously',
+			],
+			setDisappearingTimer: [
+				'Set Disappearing Timer',
+				'Set or disable disappearing messages for a chat',
+			],
+		}),
 		default: 'listChats',
 	},
 ];
@@ -125,21 +105,23 @@ export const chatProperties: INodeProperties[] = [
 	},
 
 	// Properties for Get Chat Messages
-	{
-		displayName: 'Chat JID',
-		name: 'chatJid',
-		type: 'string',
-		required: true,
-		displayOptions: {
-			show: {
-				resource: ['chat'],
-				operation: ['getChatMessages', 'pinChat', 'setDisappearingTimer', 'labelChat', 'archiveChat', 'requestChatHistory'],
-			},
+	...operationProperties('chat', [
+		'getChatMessages',
+		'pinChat',
+		'setDisappearingTimer',
+		'labelChat',
+		'archiveChat',
+		'requestChatHistory',
+	], {
+		chatJid: {
+			displayName: 'Chat JID',
+			type: 'string',
+			required: true,
+			default: '',
+			description: 'Chat JID (e.g., phone@s.whatsapp.net for individual or groupid@g.us for group)',
+			placeholder: '6289685028129@s.whatsapp.net',
 		},
-		default: '',
-		description: 'Chat JID (e.g., phone@s.whatsapp.net for individual or groupid@g.us for group)',
-		placeholder: '6289685028129@s.whatsapp.net',
-	},
+	}),
 	{
 		displayName: 'Start Time',
 		name: 'startTime',
@@ -314,51 +296,36 @@ export const chatProperties: INodeProperties[] = [
 		default: true,
 		description: 'Whether to apply (true) or remove (false) the label',
 	},
-	{
-		displayName: 'Archived',
-		name: 'archiveChatState',
-		type: 'boolean',
-		displayOptions: {
-			show: {
-				resource: ['chat'],
-				operation: ['archiveChat'],
-			},
+	...operationProperties('chat', ['archiveChat'], {
+		archiveChatState: {
+			displayName: 'Archived',
+			type: 'boolean',
+			default: true,
+			description: 'Whether to archive the chat',
 		},
-		default: true,
-		description: 'Whether to archive the chat',
-	},
-	{
-		displayName: 'Message Count',
-		name: 'historyCount',
-		type: 'number',
-		typeOptions: { minValue: 1, maxValue: 500, numberPrecision: 0 },
-		displayOptions: {
-			show: {
-				resource: ['chat'],
-				operation: ['requestChatHistory'],
-			},
+	}),
+	...operationProperties('chat', ['requestChatHistory'], {
+		historyCount: {
+			displayName: 'Message Count',
+			type: 'number',
+			typeOptions: { minValue: 1, maxValue: 500, numberPrecision: 0 },
+			default: 50,
+			description: 'Number of older messages to request from the phone',
 		},
-		default: 50,
-		description: 'Number of older messages to request from the phone',
-	},
-	{
-		displayName: 'Archive Status',
-		name: 'archiveFilter',
-		type: 'options',
-		options: [
-			{ name: 'All Chats', value: '' },
-			{ name: 'Archived', value: 'true' },
-			{ name: 'Unarchived', value: 'false' },
-		],
-		displayOptions: {
-			show: {
-				resource: ['chat'],
-				operation: ['listChats'],
-			},
+	}),
+	...operationProperties('chat', ['listChats'], {
+		archiveFilter: {
+			displayName: 'Archive Status',
+			type: 'options',
+			options: [
+				{ name: 'All Chats', value: '' },
+				{ name: 'Archived', value: 'true' },
+				{ name: 'Unarchived', value: 'false' },
+			],
+			default: '',
+			description: 'Filter chats by whether they are archived',
 		},
-		default: '',
-		description: 'Filter chats by whether they are archived',
-	},
+	}),
 ];
 
 export const executeChatOperation: OperationExecutor = async function (

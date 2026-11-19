@@ -5,6 +5,7 @@ import {
 	NodeOperationError,
 } from 'n8n-workflow';
 import { OperationExecutor, RequestOptions } from './types';
+import { operationOptions, operationProperties } from './properties';
 import { getDeviceIdHeader } from './app.operations';
 
 export const userOperations: INodeProperties[] = [
@@ -18,79 +19,39 @@ export const userOperations: INodeProperties[] = [
 				resource: ['user'],
 			},
 		},
-		options: [
-			{
-				name: 'Change Push Name',
-				value: 'changePushName',
-				description: 'Update the display name (push name) shown to others in WhatsApp',
-				action: 'Change push name',
-			},
-			{
-				name: 'Check Contact',
-				value: 'checkContact',
-				description: 'Check if contact is on WhatsApp',
-				action: 'Check if contact is on whats app',
-			},
-			{
-				name: 'Get Avatar',
-				value: 'getAvatar',
-				description: 'Get user avatar',
-				action: 'Get user avatar',
-			},
-			{
-				name: 'Get Business Profile',
-				value: 'getBusinessProfile',
-				description: 'Get business profile information',
-				action: 'Get business profile information',
-			},
-			{
-				name: 'Get My Contacts',
-				value: 'getMyContacts',
-				description: 'Get list of user contacts',
-				action: 'Get my contacts',
-			},
-			{
-				name: 'Get My Detailed Contacts',
-				value: 'getMyDetailedContacts',
-				description: 'List contacts with separate full, first, push, and business names',
-				action: 'Get my detailed contacts',
-			},
-			{
-				name: 'Get My Groups',
-				value: 'getMyGroups',
-				description: 'Get list of groups the user is in',
-				action: 'Get my groups',
-			},
-			{
-				name: 'Get My Newsletters',
-				value: 'getMyNewsletters',
-				description: 'Get list of newsletters the user follows',
-				action: 'Get my newsletters',
-			},
-			{
-				name: 'Get Privacy Settings',
-				value: 'getPrivacySettings',
-				action: 'Get privacy settings',
-			},
-			{
-				name: 'Get User Info',
-				value: 'getUserInfo',
-				description: 'Get user information',
-				action: 'Get user information',
-			},
-			{
-				name: 'Set Avatar',
-				value: 'setAvatar',
-				description: 'Set user avatar',
-				action: 'Set user avatar',
-			},
-			{
-				name: 'Subscribe to Presence',
-				value: 'subscribePresence',
-				description: 'Receive contact presence updates through GOWA webhooks',
-				action: 'Subscribe to contact presence',
-			},
-		],
+		options: operationOptions({
+			changePushName: [
+				'Change Push Name',
+				'Change push name',
+				'Update the display name (push name) shown to others in WhatsApp',
+			],
+			checkContact: ['Check Contact', 'Check if contact is on whats app', 'Check if contact is on WhatsApp'],
+			getAvatar: ['Get Avatar', 'Get user avatar'],
+			getBusinessProfile: [
+				'Get Business Profile',
+				'Get business profile information',
+			],
+			getMyContacts: ['Get My Contacts', 'Get my contacts', 'Get list of user contacts'],
+			getMyDetailedContacts: [
+				'Get My Detailed Contacts',
+				'Get my detailed contacts',
+				'List contacts with separate full, first, push, and business names',
+			],
+			getMyGroups: ['Get My Groups', 'Get my groups', 'Get list of groups the user is in'],
+			getMyNewsletters: [
+				'Get My Newsletters',
+				'Get my newsletters',
+				'Get list of newsletters the user follows',
+			],
+			getPrivacySettings: ['Get Privacy Settings', 'Get privacy settings', null],
+			getUserInfo: ['Get User Info', 'Get user information'],
+			setAvatar: ['Set Avatar', 'Set user avatar'],
+			subscribePresence: [
+				'Subscribe to Presence',
+				'Subscribe to contact presence',
+				'Receive contact presence updates through GOWA webhooks',
+			],
+		}),
 		default: 'getUserInfo',
 	},
 ];
@@ -137,20 +98,15 @@ export const userProperties: INodeProperties[] = [
 		default: '',
 		description: 'The new display name to set',
 	},
-	{
-		displayName: 'Contact Phone or JID',
-		name: 'presencePhone',
-		type: 'string',
-		required: true,
-		displayOptions: {
-			show: {
-				resource: ['user'],
-				operation: ['subscribePresence'],
-			},
+	...operationProperties('user', ['subscribePresence'], {
+		presencePhone: {
+			displayName: 'Contact Phone or JID',
+			type: 'string',
+			required: true,
+			default: '',
+			description: 'Contact to subscribe to for online and offline updates',
 		},
-		default: '',
-		description: 'Contact to subscribe to for online and offline updates',
-	},
+	}),
 ];
 
 export const executeUserOperation: OperationExecutor = async function (
